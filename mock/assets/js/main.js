@@ -260,5 +260,143 @@
     });
   });
 
+  /* ------------------------------------------------------------------
+     ロゴ画像が未配置のときは仮マークを表示
+     ------------------------------------------------------------------ */
+  $$('.brand__logo').forEach((img) => {
+    const miss = () => img.classList.add('is-missing');
+    if (img.complete && !img.naturalWidth) miss();
+    img.addEventListener('error', miss);
+  });
+
+  /* ------------------------------------------------------------------
+     用語集：検索＋カテゴリ絞り込み
+     ------------------------------------------------------------------ */
+  const gInput = $('[data-g-search]');
+  if (gInput) {
+    const toHira = (t) => t.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)).toLowerCase();
+    const terms = $$('.g-term');
+    const groups = $$('.g-group');
+    const countEl = $('[data-g-count]');
+    const emptyEl = $('[data-g-empty]');
+    let cat = 'all';
+    const apply = () => {
+      const q = toHira(gInput.value.trim());
+      let total = 0;
+      terms.forEach((t) => {
+        const ok = (cat === 'all' || t.dataset.cat === cat) && (!q || toHira(t.dataset.search).includes(q));
+        t.classList.toggle('is-hidden', !ok);
+        if (ok) total++;
+      });
+      groups.forEach((g) => {
+        const n = $$('.g-term:not(.is-hidden)', g).length;
+        g.classList.toggle('is-empty', n === 0);
+        const c = $('[data-group-count]', g);
+        if (c) c.textContent = n;
+      });
+      countEl.textContent = total;
+      emptyEl.classList.toggle('is-show', total === 0);
+      onScroll();
+    };
+    gInput.addEventListener('input', apply);
+    $$('[data-g-cats] button').forEach((b) => b.addEventListener('click', () => {
+      $$('[data-g-cats] button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      cat = b.dataset.value;
+      apply();
+    }));
+    // 関連用語リンクで飛んだ先を一瞬ハイライト
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('.g-term__rel a');
+      if (!a) return;
+      const t = document.getElementById(a.getAttribute('href').slice(1));
+      if (t && t.classList.contains('is-hidden')) { gInput.value = ''; cat = 'all'; $$('[data-g-cats] button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.value === 'all'))); apply(); }
+      if (t) { t.classList.remove('is-flash'); void t.offsetWidth; t.classList.add('is-flash'); setTimeout(() => t.classList.remove('is-flash'), 1600); }
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     本文の用語ポップ（用語集の解説を表示）
+     ------------------------------------------------------------------ */
+  const termBtns = $$('button.term');
+  if (termBtns.length) {
+    const pop = document.createElement('div');
+    pop.className = 'term-pop';
+    pop.setAttribute('role', 'tooltip');
+    pop.id = 'term-pop';
+    document.body.appendChild(pop);
+    let openBtn = null;
+    const close = () => { pop.classList.remove('is-open'); if (openBtn) openBtn.setAttribute('aria-expanded', 'false'); openBtn = null; };
+    termBtns.forEach((b) => {
+      b.setAttribute('aria-expanded', 'false');
+      b.setAttribute('aria-describedby', 'term-pop');
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openBtn === b) return close();
+        pop.innerHTML = '';
+        const t = document.createElement('b'); t.textContent = b.dataset.termName;
+        const d = document.createElement('span'); d.textContent = b.dataset.def;
+        const a = document.createElement('a'); a.href = b.dataset.href; a.textContent = '用語集で詳しく見る →';
+        pop.append(t, d, document.createElement('br'), a);
+        const r = b.getBoundingClientRect();
+        const w = Math.min(320, window.innerWidth - 32);
+        const left = Math.max(16, Math.min(window.scrollX + r.left + r.width / 2 - w / 2, window.scrollX + window.innerWidth - w - 16));
+        pop.style.left = left + 'px';
+        pop.style.top = (window.scrollY + r.bottom + 10) + 'px';
+        pop.classList.add('is-open');
+        if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+        openBtn = b; b.setAttribute('aria-expanded', 'true');
+      });
+    });
+    document.addEventListener('click', (e) => { if (!pop.contains(e.target)) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    window.addEventListener('resize', close);
+  }
+
+  /* ------------------------------------------------------------------
+     連載の既読管理（この端末のみ・ブラウザ保存）
+     ------------------------------------------------------------------ */
+  const READ_KEY = 'tempos-column-read';
+  const loadRead = () => { try { return JSON.parse(localStorage.getItem(READ_KEY)) || {}; } catch (_) { return {}; } };
+  const saveRead = (v) => { try { localStorage.setItem(READ_KEY, JSON.stringify(v)); } catch (_) { /* 保存不可でも表示は継続 */ } };
+  const paintRead = () => {
+    const read = loadRead();
+    $$('[data-series]').forEach((list) => {
+      const done = read[list.dataset.series] || [];
+      $$('li[data-ep]', list).forEach((li) => {
+        const on = done.includes(Number(li.dataset.ep));
+        li.classList.toggle('is-read', on);
+        const badge = $('[data-read-badge]', li);
+        if (badge) badge.hidden = !on;
+      });
+    });
+    // 連載トップ：続きから読む
+    const resume = $('[data-resume]');
+    const list = $('.route-v[data-series]');
+    if (resume && list) {
+      const done = read[list.dataset.series] || [];
+      const next = $$('li.is-pub[data-ep]', list).find((li) => !done.includes(Number(li.dataset.ep)));
+      if (done.length && next) {
+        const a = $('a.ep', next);
+        if (a) { resume.href = a.getAttribute('href'); resume.firstChild.textContent = `続きから読む（第${next.dataset.ep}回）`; }
+      }
+    }
+  };
+  paintRead();
+  const art = $('[data-read-series]');
+  if (art) {
+    const end = $('.ep-nav', art);
+    const markIO = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      const read = loadRead();
+      const sid = art.dataset.readSeries;
+      const ep = Number(art.dataset.readEp);
+      read[sid] = [...new Set([...(read[sid] || []), ep])];
+      saveRead(read);
+      paintRead();
+      markIO.disconnect();
+    });
+    if (end) markIO.observe(end);
+  }
+
   onScroll();
 })();
