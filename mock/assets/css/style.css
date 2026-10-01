@@ -951,6 +951,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 
 /* --- コーポレートロゴ ------------------------------------------------- */
 .brand__logo { height: 40px; width: auto; flex: none; }
+.brand__mark[hidden] { display: none; }
 .brand__logo.is-missing { display: none; }
 .brand__logo.is-missing + .brand__mark { display: grid !important; }
 .brand__name { border-left: 1px solid var(--line); padding-left: 10px; }
