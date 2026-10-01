@@ -64,10 +64,10 @@
         <p class="tool-hero__sub reveal" style="--d:.15s">動く道具はもちろん、型落ち・予備工具・ケースなしも歓迎。プロの道具を正当評価します。</p>
         <div class="tool-badges reveal" style="--d:.2s"><span>型番明確査定</span><span>現場帰り・持ち込み歓迎</span><span>即日現金化</span></div>
         <div class="tool-hero__ctas reveal" style="--d:.25s">
-          <a class="btn btn--line" href="#form"><svg class="icon" style="fill:#fff;stroke:none"><use href="#i-line"/></svg>LINEで型番査定</a>
+          <a class="btn btn--cta" href="#form"><svg class="icon"><use href="#i-edit"/></svg>型番で無料査定</a>
           <a class="btn btn--primary" href="tel:0120000000"><svg class="icon"><use href="#i-phone"/></svg>電話で相談</a>
         </div>
-        <p class="micro"><span>型番を送るだけ・1分で完了</span><span>査定料・キャンセル料0円</span></p>
+        <p class="micro"><span>型番を入れるだけ・1分で完了</span><span>査定料・キャンセル料0円</span></p>
       </div>
       <div class="tool-hero__visual">
         <div class="ph reveal-clip" data-label="PHOTO：インパクトドライバ／現場（AVIF）">
@@ -173,13 +173,13 @@
       <div class="faq">
         <details><summary><span class="q">Q</span>ケースがない本体のみでも買取りできますか？<span class="pm" aria-hidden="true"></span></summary><p class="a">できます。箱・ケースなし、本体のみ、バッテリー劣化品も買取対象です。付属品がそろっている場合は査定額がアップします。</p></details>
         <details><summary><span class="q">Q</span>現場の不用工具をまとめて査定できますか？<span class="pm" aria-hidden="true"></span></summary><p class="a">できます。出張買取で現場や倉庫の工具を一括査定します。数十点〜数百点の大口も対応可能です。</p></details>
-        <details><summary><span class="q">Q</span>型番がわからなくても査定できますか？<span class="pm" aria-hidden="true"></span></summary><p class="a">本体の銘板（型番シール）の写真をLINEで送っていただければ、こちらで特定します。</p></details>
+        <details><summary><span class="q">Q</span>型番がわからなくても査定できますか？<span class="pm" aria-hidden="true"></span></summary><p class="a">査定フォームから本体の銘板（型番シール）の写真を添付していただければ、こちらで特定します。</p></details>
         <details><summary><span class="q">Q</span>インボイスや領収書は発行できますか？<span class="pm" aria-hidden="true"></span></summary><p class="a">法人・個人事業主のお客様には買取明細書を発行します。詳しくはお問い合わせください。</p></details>
       </div>
     </div>
   </section>
 
-  <!-- [8] フォーム＆LINE -->
+  <!-- [8] 査定フォーム -->
   <section class="section cv-section--tool" id="form" data-nav="無料査定">
     <div class="container">
       <div class="sec-head reveal">
@@ -198,6 +198,7 @@
                 <select required><option value="">選択してください</option><option>東京都</option><option>神奈川県</option><option>埼玉県</option><option>千葉県</option><option>大阪府</option><option>愛知県</option><option>その他</option></select>
               </label>
               <label class="field">メーカー・型番（任意）<input type="text" placeholder="例）マキタ TD173D"></label>
+              <label class="field full">写真（任意・3枚まで）<input type="file" accept="image/*" multiple><span class="hint">型番がわからない場合は銘板（型番シール）の写真を添付してください</span></label>
               <fieldset class="field full" style="border:0;padding:0;margin:0"><legend style="margin-bottom:6px">工具の種類</legend>
                 <div class="seg">
                   <label><input type="radio" name="kind" checked><span>電動工具</span></label>
@@ -213,11 +214,11 @@
           </form>
           <div class="form-done" role="status"><h3>送信しました（モック）</h3><p class="lead">担当者より折り返しご連絡いたします。</p></div>
         </div>
-        <div class="line-card reveal" style="--d:.1s">
-          <span class="line-card__bubble"></span>
-          <h3>銘板を撮って送るだけ。<br>LINEでかんたん型番査定</h3>
-          <ol><li>友だち追加</li><li>本体と銘板（型番シール）を撮影</li><li>最短30分で査定額をお知らせ</li></ol>
-          <a class="btn" href="#"><svg class="icon" style="fill:currentColor;stroke:none"><use href="#i-line"/></svg>LINEで友だち追加</a>
+        <div class="side-card reveal" style="--d:.1s">
+          <span class="side-card__bubble"></span>
+          <h3>安心してご依頼いただける<br>3つの約束</h3>
+          <ol><li>査定料・出張費・キャンセル料0円</li><li>金額にご納得いただけなければ断ってOK</li><li>強引な営業・しつこい電話は一切なし</li></ol>
+          <p class="side-card__tel">お急ぎの方はお電話でも<a href="tel:0120000000"><svg class="icon"><use href="#i-phone"/></svg>0120-000-000</a><small>受付 7:00〜21:00／現場帰りもOK</small></p>
         </div>
       </div>
     </div>
@@ -247,7 +248,7 @@
       <svg class="dock__ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="dock__ring-track" cx="20" cy="20" r="18" pathLength="100"/><circle class="dock__ring-bar" cx="20" cy="20" r="18" pathLength="100"/></svg>
       <span class="dock__orb-icon" aria-hidden="true"><i></i><i></i></span>
     </button>
-    <a class="dock__btn dock__btn--line" href="#form"><svg class="icon"><use href="#i-line"/></svg><span><small>型番を送るだけ</small>LINE査定</span></a>
+    <a class="dock__btn dock__btn--form" href="#form"><svg class="icon"><use href="#i-edit"/></svg><span><small>型番を入れるだけ</small>WEB査定</span></a>
   </div>
 </div>
 
