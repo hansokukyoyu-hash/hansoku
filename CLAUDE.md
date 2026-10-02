@@ -31,14 +31,15 @@
    - 変更内容に関係するページ・管理画面（ACF の入力欄など）は個別にも確認する
 5. `style.css` の `Version` と `functions.php` の `TK_VERSION` を上げる
 6. SPEC.md / WORKLOG.md を更新（仕様が変わったら必ず SPEC.md も直す）
-7. コミット → プッシュ → タグ `theme-vX.Y.Z` → テーマ ZIP を作成してユーザーに渡す
+7. コミット → プッシュ → `docs/WORKLOG.md` の「リリース履歴」にバージョンとコミット ID を追記 → テーマ ZIP を作成してユーザーに渡す
+   （この作業環境ではタグのプッシュができないため、コミット ID で管理する）
 8. ユーザーが本番に反映後、本番を読み取り確認：`tools/check-live.sh` と `node tools/check-pages.mjs https://tenpos.online/kaitori`
    - **本番を変更する前にも**同じ確認を実行し、変更前の状態を記録しておく（変更後との比較用）
 
 ## 本番への反映方法（ユーザー作業）
 外観 → テーマ → 新規追加 → テーマのアップロード → ZIP を選択 →「アップロードしたもので置き換える」。
-戻す場合は、一つ前のタグからZIPを作って同じ手順で置き換える：
-`git archive --format=zip --prefix=tenpos-kaitori/ theme-v1.0.1:wp-content/themes/tenpos-kaitori -o tenpos-kaitori-1.0.1.zip`
+戻す場合は、`docs/WORKLOG.md` のリリース履歴から一つ前のコミット ID を選び、ZIP を作って同じ手順で置き換える：
+`git archive --format=zip --prefix=tenpos-kaitori/ <コミットID>:wp-content/themes/tenpos-kaitori -o tenpos-kaitori-<版>.zip`
 
 ## 作業環境の注意
 - この環境の外向き通信はプロキシ経由。`tenpos.online`・`wordpress.org`・`downloads.wordpress.org` はネットワーク許可が必要（許可されていなければユーザーに環境設定の変更を依頼）。

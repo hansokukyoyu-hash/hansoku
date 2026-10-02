@@ -34,7 +34,12 @@
 
 ### Git
 - ブランチ：`claude/wordpress-site-setup-4fni0c`
-- タグ：`theme-v1.0.0`（76c1ce7）、`theme-v1.0.1`（a4b604f）… 戻す場合はこのタグの ZIP を作ってアップロード
+- リリース履歴（テーマ ZIP の作り方：`git archive --format=zip --prefix=tenpos-kaitori/ <コミットID>:wp-content/themes/tenpos-kaitori -o tenpos-kaitori-<版>.zip`）
+
+| 版 | コミット ID | 本番反映 | 内容 |
+|---|---|---|---|
+| 1.0.0 | `76c1ce7` | 済 | 初版 |
+| 1.0.1 | `a4b604f` | 済（現行） | CF7 空枠修正、プライバシーポリシーひな形 |
 
 ## 次回
 → `docs/TODO.md`
