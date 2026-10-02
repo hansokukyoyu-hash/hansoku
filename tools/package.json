@@ -1,0 +1,9 @@
+{
+  "name": "tenpos-kaitori-tools",
+  "private": true,
+  "type": "module",
+  "description": "ローカル再現環境・表示確認用（本番には不要）",
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
