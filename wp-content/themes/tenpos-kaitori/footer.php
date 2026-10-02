@@ -49,8 +49,12 @@ $tk_brand_name = array(
 						<li><a href="<?php echo esc_url( get_post_type_archive_link( 'glossary' ) ); ?>">用語集</a></li>
 						<li><a href="<?php echo esc_url( get_post_type_archive_link( 'faq' ) ); ?>">よくある質問</a></li>
 						<li><a href="<?php echo esc_url( tk_page_url( 'contact' ) ); ?>">お問い合わせ</a></li>
-						<li><a href="<?php echo esc_url( get_privacy_policy_url() ?: tk_page_url( 'privacy-policy' ) ); ?>">プライバシーポリシー</a></li>
-						<li><a href="<?php echo esc_url( tk_page_url( 'terms' ) ); ?>">利用規約</a></li>
+						<?php if ( get_privacy_policy_url() ) : ?>
+							<li><a href="<?php echo esc_url( get_privacy_policy_url() ); ?>">プライバシーポリシー</a></li>
+						<?php endif; ?>
+						<?php if ( tk_page_published( 'terms' ) ) : ?>
+							<li><a href="<?php echo esc_url( tk_page_url( 'terms' ) ); ?>">利用規約</a></li>
+						<?php endif; ?>
 					</ul>
 				<?php } ?>
 			</div>

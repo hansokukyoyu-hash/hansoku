@@ -1056,3 +1056,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .wpcf7 .wpcf7-acceptance label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
 .wpcf7 .wpcf7-acceptance input { width: 20px !important; height: 20px !important; accent-color: var(--primary); }
 .wpcf7 form.init .wpcf7-response-output, .wpcf7 form.resetting .wpcf7-response-output, .wpcf7 form.submitting .wpcf7-response-output { display: none; }
+/* CF7 の標準 CSS を読み込まない分の補完 */
+.wpcf7 .hidden-fields-container { display: none; }
+.wpcf7 .wpcf7-spinner { visibility: hidden; display: block; width: 24px; height: 24px; margin: 12px auto 0; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--primary); animation: tk-spin 1s linear infinite; }
+.wpcf7 form.submitting .wpcf7-spinner { visibility: visible; }
+@keyframes tk-spin { to { transform: rotate(360deg); } }

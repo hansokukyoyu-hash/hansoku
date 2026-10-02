@@ -133,6 +133,14 @@ function tk_page_url( string $path ): string {
 }
 
 /**
+ * 固定ページが公開済みか
+ */
+function tk_page_published( string $path ): bool {
+	$page = get_page_by_path( $path );
+	return $page && 'publish' === $page->post_status;
+}
+
+/**
  * ジャンル別の査定フォーム位置
  */
 function tk_form_url( string $genre ): string {

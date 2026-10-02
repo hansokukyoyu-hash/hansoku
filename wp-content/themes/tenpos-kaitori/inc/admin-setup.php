@@ -14,6 +14,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once TK_DIR . '/inc/sample-data.php';
+require_once TK_DIR . '/inc/privacy.php';
 
 /**
  * 必要な固定ページ（slug => [タイトル, 本文]）
@@ -25,7 +26,6 @@ function tk_required_pages(): array {
 		'tool'                   => array( '工具買取', '' ),
 		'area'                   => array( '対応エリア・店舗案内', '<!-- wp:paragraph --><p>対応エリア・店舗情報をここに記載します。</p><!-- /wp:paragraph -->' ),
 		'contact'                => array( 'お問い合わせ・無料査定', '' ),
-		'privacy-policy'         => array( 'プライバシーポリシー', '' ),
 		'terms'                  => array( '利用規約', '' ),
 	);
 }
@@ -35,6 +35,9 @@ function tk_setup_pages(): array {
 	foreach ( tk_required_pages() as $slug => [ $title, $content ] ) {
 		$page = get_page_by_path( $slug );
 		if ( $page ) {
+			if ( 'publish' !== $page->post_status ) {
+				$log[] = "固定ページ「{$page->post_title}」（/{$slug}/）は {$page->post_status} 状態です。内容を確認して公開してください";
+			}
 			continue;
 		}
 		$id    = wp_insert_post(
@@ -67,7 +70,8 @@ function tk_setup_screen(): void {
 	$log = array();
 	if ( isset( $_POST['tk_setup'] ) && check_admin_referer( 'tk_setup' ) && current_user_can( 'edit_theme_options' ) ) {
 		tk_ensure_genres();
-		$log = tk_setup_pages();
+		$log   = tk_setup_pages();
+		$log[] = tk_setup_privacy_page();
 		if ( ! empty( $_POST['tk_samples'] ) ) {
 			$log = array_merge( $log, tk_import_samples() );
 		}
@@ -80,8 +84,17 @@ function tk_setup_screen(): void {
 		<p>テーマに必要な固定ページ・ジャンルを作成します。既にあるものは作成しません（何度実行しても安全です）。</p>
 		<ul style="list-style:disc;padding-left:20px">
 			<?php foreach ( tk_required_pages() as $slug => [ $title ] ) : ?>
-				<li><?php echo esc_html( $title ); ?>（/<?php echo esc_html( $slug ); ?>/）<?php echo get_page_by_path( $slug ) ? ' … <strong>作成済み</strong>' : ''; ?></li>
+				<li><?php echo esc_html( $title ); ?>（/<?php echo esc_html( $slug ); ?>/）<?php
+				$tk_p = get_page_by_path( $slug );
+				if ( $tk_p ) {
+					echo 'publish' === $tk_p->post_status ? ' … <strong>公開中</strong>' : ' … <strong style="color:#b32d2e">' . esc_html( get_post_status_object( $tk_p->post_status )?->label ?? $tk_p->post_status ) . '（未公開）</strong>';
+				}
+				?></li>
 			<?php endforeach; ?>
+			<li>プライバシーポリシー（/privacy-policy/）<?php
+			$tk_pp = get_page_by_path( 'privacy-policy' );
+			echo $tk_pp ? ( 'publish' === $tk_pp->post_status ? ' … <strong>公開中</strong>' : ' … <strong style="color:#b32d2e">未公開</strong>' ) : '';
+			?> … 未公開の場合、テーマのひな形（買取サービス向け）で下書きを作成します</li>
 		</ul>
 		<form method="post">
 			<?php wp_nonce_field( 'tk_setup' ); ?>
