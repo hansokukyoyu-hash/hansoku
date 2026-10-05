@@ -36,6 +36,19 @@
 - [x] 反映前後に `tools/check-live.sh` / `tools/check-pages.mjs` で本番確認
 - [ ] 外観 → カスタマイズ → 農機具LP：アフリカ訴求 で文言を最終確認（必要なら現地写真を設定）
 
+## GEO 対策（2026-10-05 調査・提案。方針はユーザー確認待ち）
+調査結果（本番・閲覧のみ）：WP 標準サイトマップ `/kaitori/wp-sitemap.xml` は生成済み。ルートの robots.txt（他サイトと共用）に kaitori のサイトマップ記載なし。meta description・OGP なし。AI クローラー（GPTBot・ClaudeBot・PerplexityBot 等）はアクセス可。
+- [ ] （ユーザー）既定の投稿「Hello world!」・固定ページ「Sample Page」を削除（公開中・サイトマップに載っている）
+- [ ] （ユーザー）架空の買取実績・根拠未確認の数字の整理（AI に引用されるリスク。上の「根拠の確認が必要な表示」）
+- [ ] （ユーザー）電話番号・古物商許可番号を正式値に
+- [ ] （テーマ）サイトマップ整理：ユーザー（/author/kaitori/ はログイン名が見える）・未分類カテゴリ・用語の個別 URL（301）・FAQ の個別 URL を除外
+- [ ] （テーマ）meta description・OGP・X カード
+- [ ] （テーマ）構造化データ拡充：WebSite、Organization（住所・電話・古物商）、Service（農機具買取・工具買取／対応エリア）、記事の dateModified
+- [ ] （テーマ＋原稿）LP 冒頭の要約（誰が・何を・どこで・費用・流れ）、運営会社ページ
+- [ ] （ユーザー）Search Console にサイトマップ送信、Bing Webmaster Tools 登録（ChatGPT 検索・Copilot は Bing の索引を使う）
+- [ ] （サーバー管理者）ルート robots.txt に `Sitemap: https://tenpos.online/kaitori/wp-sitemap.xml` を追記
+- [ ] （任意）llms.txt、GA4 で AI 経由（chatgpt.com・perplexity.ai 等）の流入を確認する探索レポート
+
 ## 根拠の確認が必要な表示（モック由来の仮の数字・表現。事実でなければ削除・修正）
 - [ ] 農機具 LP ファーストビュー「今月の買取 1,284台」（`page-agricultural-equipment.php`）
 - [ ] トップ「40年以上の買取実績」（`front-page.php`）
