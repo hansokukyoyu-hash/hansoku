@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.2.0（本番は 1.1.0。1.2.0 は反映待ち） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.2.0（本番反映済み 2026-10-05） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -119,7 +119,7 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 | `tk_license` | 古物商許可番号 | **仮 `第000000000000号`** |
 | `tk_cf7_agri` | CF7 フォームID（農機具） | 設定済み |
 | `tk_cf7_tool` | CF7 フォームID（工具） | 設定済み |
-| `tk_cf7_contact` | CF7 フォームID（共通） | **未設定**（/contact/ は「準備中」表示） |
+| `tk_cf7_contact` | CF7 フォームID（共通） | 設定済み（2026-10-05、総合問い合わせフォーム） |
 
 ### カスタマイザー（外観 → カスタマイズ → 農機具LP：アフリカ訴求）※ 1.1.0 で追加
 | キー | 内容 | 既定値 |
