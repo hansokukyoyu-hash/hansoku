@@ -39,6 +39,9 @@ function tk_opt( string $key ): string {
 		'tk_cf7_agri'     => '',
 		'tk_cf7_tool'     => '',
 		'tk_cf7_contact'  => '',
+		'tk_sheets_enable' => '',
+		'tk_sheets_url'    => '',
+		'tk_sheets_token'  => '',
 	) + tk_africa_defaults();
 	return (string) get_theme_mod( $key, $defaults[ $key ] ?? '' );
 }

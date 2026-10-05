@@ -49,6 +49,67 @@ add_action(
 			);
 		}
 
+		// スプレッドシート連携（問い合わせ・査定依頼の自動追記）.
+		$tk_last_ok  = get_option( 'tk_sheets_last_ok' );
+		$tk_last_err = get_option( 'tk_sheets_last_error' );
+		$wp_customize->add_section(
+			'tk_sheets',
+			array(
+				'title'       => 'スプレッドシート連携',
+				'priority'    => 32,
+				'description' => '査定・問い合わせフォームの送信内容を Google スプレッドシートに自動追記します。設定手順はテーマの docs/gas/README.md。'
+					. ( $tk_last_ok ? "\n最終成功：{$tk_last_ok}" : '' )
+					. ( $tk_last_err ? "\n最終エラー：{$tk_last_err}" : '' ),
+			)
+		);
+		$wp_customize->add_setting(
+			'tk_sheets_enable',
+			array(
+				'default'           => '',
+				'sanitize_callback' => fn( $v ) => $v ? '1' : '',
+			)
+		);
+		$wp_customize->add_control(
+			'tk_sheets_enable',
+			array(
+				'label'   => 'スプレッドシートへの自動追記を有効にする',
+				'section' => 'tk_sheets',
+				'type'    => 'checkbox',
+			)
+		);
+		$wp_customize->add_setting(
+			'tk_sheets_url',
+			array(
+				'default'           => '',
+				'sanitize_callback' => fn( $v ) => tk_sheets_url_ok( trim( (string) $v ) ) ? trim( (string) $v ) : '',
+			)
+		);
+		$wp_customize->add_control(
+			'tk_sheets_url',
+			array(
+				'label'       => 'Apps Script ウェブアプリの URL',
+				'description' => 'https://script.google.com/macros/s/…/exec の形式のみ保存できます',
+				'section'     => 'tk_sheets',
+				'type'        => 'url',
+			)
+		);
+		$wp_customize->add_setting(
+			'tk_sheets_token',
+			array(
+				'default'           => '',
+				'sanitize_callback' => fn( $v ) => preg_replace( '/[^A-Za-z0-9]/', '', (string) $v ),
+			)
+		);
+		$wp_customize->add_control(
+			'tk_sheets_token',
+			array(
+				'label'       => 'トークン（合言葉）',
+				'description' => 'Apps Script の setup 実行時にログに表示された値',
+				'section'     => 'tk_sheets',
+				'type'        => 'text',
+			)
+		);
+
 		// 農機具 LP：アフリカで再活用（当面の主訴求）.
 		$d = tk_africa_defaults();
 		$wp_customize->add_section(

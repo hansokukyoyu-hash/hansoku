@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TK_VERSION', '1.3.0' );
+define( 'TK_VERSION', '1.4.0' );
 define( 'TK_DIR', get_template_directory() );
 define( 'TK_URI', get_template_directory_uri() );
 
@@ -19,6 +19,7 @@ foreach ( array(
 	'customizer',
 	'enqueue',
 	'forms',
+	'sheets',
 	'shortcodes',
 	'schema',
 	'admin-setup',

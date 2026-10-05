@@ -1,7 +1,7 @@
 # サイト仕様書（農機具・工具買取サイト）
 
 > **変更前に必ずこのファイルを読むこと。** ここに書かれた slug・フィールド名・設定キー・依存関係は、本番データ（投稿・メタ・設定）と結びついています。名前を変えると表示が壊れたりデータが見えなくなったりします。
-> 最終更新：2026-10-05（テーマ 1.3.0）
+> 最終更新：2026-10-05（テーマ 1.4.0）
 
 ---
 
@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.3.0（本番反映済み 2026-10-05） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.4.0（本番は 1.3.0。1.4.0 は反映待ち） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -121,6 +121,15 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 | `tk_cf7_tool` | CF7 フォームID（工具） | 設定済み |
 | `tk_cf7_contact` | CF7 フォームID（共通） | 設定済み（2026-10-05、総合問い合わせフォーム） |
 
+### カスタマイザー（外観 → カスタマイズ → スプレッドシート連携）※ 1.4.0 で追加
+| キー | 内容 |
+|---|---|
+| `tk_sheets_enable` | 自動追記のオン／オフ（`'1'` / `''`、既定オフ） |
+| `tk_sheets_url` | Apps Script ウェブアプリ URL（`https://script.google.com/macros/s/…/exec` 以外は保存されない） |
+| `tk_sheets_token` | 合言葉（英数字のみ）。Apps Script の Script Properties `TOKEN` と同じ値 |
+
+オプション：`tk_sheets_last_ok`（最終成功日時）、`tk_sheets_last_error`（最終エラー。値があると管理画面に警告。次の成功で消える）
+
 ### カスタマイザー（外観 → カスタマイズ → 農機具LP：アフリカ訴求）※ 1.1.0 で追加
 | キー | 内容 | 既定値 |
 |---|---|---|
@@ -188,6 +197,15 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 - 旧記述：テーマの CSS はこのマークアップ（`.form-grid` `.field` `.req` `.hint`）前提。
 - フォーム ID 未設定時は電話導線を表示（管理者にのみ設定案内）。
 - 送信内容は Flamingo に保存される（個人情報。管理者アカウントは最小限に）。
+
+### スプレッドシート連携（`inc/sheets.php`・1.4.0）
+- `wpcf7_mail_sent`（メール送信成功後）に、テーマの3フォーム（`tk_cf7_agri` / `tk_cf7_tool` / `tk_cf7_contact` の ID）の送信内容だけを Apps Script へ JSON で POST。302 転送をたどり、転送先の `{"ok":true}` で成功判定（タイムアウト 8 秒）
+- 送るデータ：受付ID（`TK-YYYYMMDD-HHMMSS-XXXX`）・日時・フォーム種別・`your-name/tel/email/pref/kind/model/message`・写真の有無（ファイルは送らない）・送信ページ URL・トークン
+- 失敗してもフォームは完了表示（問い合わせは Flamingo・メールに保存済み）。失敗内容は `tk_sheets_last_error` と error_log
+- 送信先は script.google.com のみ（フィルター `tk_sheets_allow_url` はローカル検証専用）
+- シート側：`docs/gas/Code.gs`（トークン照合・受付ID の重複防止・数式インジェクション対策（`= + - @` で始まる値に `'`））／手順 `docs/gas/README.md`
+- **シートの列順・見出しは変えない**（右端への追加は可）。ウェブアプリのデプロイは「実行：自分／アクセス：全員」が必要（サーバーから未ログインで送るため）。Workspace の管理設定で「全員」が選べない場合は管理者の許可かサービスアカウント方式が必要
+- シートの共有は社内限定のままでよい（Apps Script は所有者権限で書き込む）
 
 ### 構造化データ（`inc/schema.php`）
 トップ：Organization／LP・/faq/：FAQPage（FAQ 投稿から生成）／実績詳細：Product+Offer／記事：Article（連載は CreativeWorkSeries）+BreadcrumbList／用語集：DefinedTermSet。
