@@ -48,5 +48,72 @@ add_action(
 				)
 			);
 		}
+
+		// 農機具 LP：アフリカで再活用（当面の主訴求）.
+		$d = tk_africa_defaults();
+		$wp_customize->add_section(
+			'tk_africa',
+			array(
+				'title'       => '農機具LP：アフリカ訴求',
+				'priority'    => 31,
+				'description' => '農機具買取ページのファーストビューの帯と「アフリカで再活用」セクションの内容。国名・台数などの数字は、根拠資料があるものだけ記載してください。',
+			)
+		);
+		$wp_customize->add_setting(
+			'tk_africa_enable',
+			array(
+				'default'           => $d['tk_africa_enable'],
+				'sanitize_callback' => fn( $v ) => $v ? '1' : '',
+			)
+		);
+		$wp_customize->add_control(
+			'tk_africa_enable',
+			array(
+				'label'   => 'アフリカ訴求を表示する（ファーストビューの帯・セクション・目次タブ）',
+				'section' => 'tk_africa',
+				'type'    => 'checkbox',
+			)
+		);
+		foreach ( array(
+			'tk_africa_badge' => array( 'ファーストビューの帯の文言', 'text', 'sanitize_text_field', '' ),
+			'tk_africa_title' => array( 'セクション見出し', 'textarea', 'sanitize_textarea_field', '改行すると見出しも改行されます' ),
+			'tk_africa_lead'  => array( 'セクション本文（結論の一文）', 'textarea', 'sanitize_textarea_field', '' ),
+		) as $id => [ $label, $type, $sanitize, $desc ] ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'default'           => $d[ $id ],
+					'sanitize_callback' => $sanitize,
+				)
+			);
+			$wp_customize->add_control(
+				$id,
+				array(
+					'label'       => $label,
+					'section'     => 'tk_africa',
+					'type'        => $type,
+					'description' => $desc,
+				)
+			);
+		}
+		$wp_customize->add_setting(
+			'tk_africa_image',
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'absint',
+			)
+		);
+		$wp_customize->add_control(
+			new WP_Customize_Media_Control(
+				$wp_customize,
+				'tk_africa_image',
+				array(
+					'label'       => 'セクションの写真（任意）',
+					'description' => '未設定の場合は「日本→アフリカ」の図を表示します。',
+					'section'     => 'tk_africa',
+					'mime_type'   => 'image',
+				)
+			)
+		);
 	}
 );

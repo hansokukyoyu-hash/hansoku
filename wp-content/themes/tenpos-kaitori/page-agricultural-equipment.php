@@ -7,12 +7,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
+$tk_africa = tk_africa_enabled();
+
 get_header();
+// 目次タブは本文の [data-nav] セクションと同じ順番・同じ数にすること（SPEC.md §5）.
 get_template_part(
 	'parts/anchor-tabs',
 	null,
 	array(
-		'items' => array(
+		'items' => ( $tk_africa ? array( 'africa' => 'アフリカで再活用' ) : array() ) + array(
 			'reason'  => '買取できる理由',
 			'items'   => '対応品目',
 			'results' => '買取事例',
@@ -30,6 +33,9 @@ get_template_part(
   <section class="agri-hero">
     <div class="container agri-hero__grid">
       <div>
+        <?php if ( $tk_africa && '' !== trim( tk_opt( 'tk_africa_badge' ) ) ) : ?>
+        <a class="africa-badge" href="#africa"><span class="africa-badge__ico"><svg class="icon"><use href="#i-globe"/></svg></span><span><?php echo esc_html( tk_opt( 'tk_africa_badge' ) ); ?></span><svg class="icon africa-badge__arrow"><use href="#i-arrow"/></svg></a>
+        <?php endif; ?>
         <p class="agri-hero__tag"><i></i>全国出張・本日もご予約受付中</p>
         <h1>
           <span class="line"><span style="--d:.05s">動かなくても、</span></span>
@@ -60,6 +66,9 @@ get_template_part(
       </div>
     </div>
   </section>
+
+  <!-- [2] アフリカで再活用（当面の主訴求。カスタマイザーでオン／オフ） -->
+  <?php if ( $tk_africa ) { get_template_part( 'parts/africa' ); } ?>
 
   <!-- [3] 悩み共感＆解決 -->
   <section class="section" id="reason" data-nav="買取できる理由" style="background:var(--surface)">

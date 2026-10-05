@@ -39,8 +39,31 @@ function tk_opt( string $key ): string {
 		'tk_cf7_agri'     => '',
 		'tk_cf7_tool'     => '',
 		'tk_cf7_contact'  => '',
-	);
+	) + tk_africa_defaults();
 	return (string) get_theme_mod( $key, $defaults[ $key ] ?? '' );
+}
+
+/**
+ * 農機具 LP「アフリカで再活用」訴求の既定値（外観 → カスタマイズ → 農機具LP：アフリカ訴求）
+ *
+ * 文言は事実（買取品をアフリカへ輸出し現地で再活用）の範囲にとどめる。
+ * 国名・台数などの具体的な数字は、根拠資料がそろうまで載せない。
+ */
+function tk_africa_defaults(): array {
+	return array(
+		'tk_africa_enable' => '1',
+		'tk_africa_badge'  => '買い取った農機具は、アフリカの農業で再び活躍します',
+		'tk_africa_title'  => "あなたの農機具を、\nアフリカの農業の力に。",
+		'tk_africa_lead'   => 'テンポスが買い取った農機具は、整備したうえでアフリカへ輸出され、現地の農業の現場で再び使われます。使わなくなった農機具を、処分ではなく次の担い手へ。',
+		'tk_africa_image'  => '',
+	);
+}
+
+/**
+ * 「アフリカで再活用」訴求を表示するか
+ */
+function tk_africa_enabled(): bool {
+	return '1' === tk_opt( 'tk_africa_enable' );
 }
 
 /**

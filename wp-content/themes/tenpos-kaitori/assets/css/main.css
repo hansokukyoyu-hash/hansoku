@@ -1061,3 +1061,50 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .wpcf7 .wpcf7-spinner { visibility: hidden; display: block; width: 24px; height: 24px; margin: 12px auto 0; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--primary); animation: tk-spin 1s linear infinite; }
 .wpcf7 form.submitting .wpcf7-spinner { visibility: visible; }
 @keyframes tk-spin { to { transform: rotate(360deg); } }
+
+/* ==========================================================================
+   農機具 LP：アフリカで再活用（1.1.0 追加・当面の主訴求）
+   ========================================================================== */
+.africa-badge {
+  display: inline-flex; align-items: center; gap: 10px; max-width: 100%;
+  margin-bottom: 14px; padding: 8px 14px 8px 8px; border-radius: 99px;
+  background: var(--agri-deep); color: #fff; font-size: 13px; font-weight: 900; line-height: 1.45;
+  box-shadow: 0 10px 24px -14px rgba(29, 74, 39, .8); transition: transform .3s var(--ease);
+}
+.africa-badge:hover { transform: translateY(-2px); }
+.africa-badge__ico { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #e8c46a; color: var(--agri-deep); }
+.africa-badge__ico .icon { width: 18px; height: 18px; }
+.africa-badge__arrow { flex: none; width: 16px; height: 16px; opacity: .8; }
+
+.africa { background: var(--agri-deep); color: #fff; position: relative; overflow: hidden; }
+.africa::before { content: ""; position: absolute; inset: auto -10% -40% auto; width: 60%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(232, 196, 106, .18), transparent 65%); pointer-events: none; }
+.africa .eyebrow { color: #e8c46a; }
+.africa .sec-title { color: #fff; }
+.africa .answer { background: rgba(255, 255, 255, .08); border-left-color: #e8c46a; color: rgba(255, 255, 255, .92); }
+.africa__grid { display: grid; gap: 36px; position: relative; }
+@media (min-width: 960px) { .africa__grid { grid-template-columns: 1.15fr .85fr; align-items: center; gap: 56px; } }
+.africa-journey { display: grid; gap: 10px; counter-reset: none; }
+@media (min-width: 640px) { .africa-journey { grid-template-columns: 1fr 1fr; } }
+.africa-journey li { display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto auto; column-gap: 12px; padding: 16px; border-radius: var(--radius); background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); }
+.africa-journey__ico { grid-row: 1 / 4; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #e8c46a; color: var(--agri-deep); }
+.africa-journey__ico .icon { width: 24px; height: 24px; }
+.africa-journey__no { font-family: var(--font-en); font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #e8c46a; }
+.africa-journey strong { font-size: 16px; font-weight: 900; line-height: 1.45; }
+.africa-journey li > span:last-child { font-size: 13px; color: rgba(255, 255, 255, .78); margin-top: 2px; }
+.africa__cta { margin-top: 24px; }
+.africa__cta .micro { color: rgba(255, 255, 255, .75); }
+.africa__cta .micro span::before { color: #e8c46a; }
+.africa__visual .ph { aspect-ratio: 4 / 3; border-radius: var(--radius-l); }
+.africa-route { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-l); background: radial-gradient(120% 100% at 80% 20%, #3d7d48, #24572f 60%, #193f22); overflow: hidden; }
+.africa-route svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.africa-route__path { stroke: #e8c46a; animation: africa-dash 2.4s linear infinite; }
+@keyframes africa-dash { to { stroke-dashoffset: -48; } }
+.africa-route__dot { fill: #fff; }
+.africa-route__dot--to { fill: #e8c46a; }
+.africa-route__ring { stroke: #e8c46a; stroke-width: 2; opacity: .6; transform-origin: 82px 150px; animation: africa-ping 2.4s ease-out infinite; }
+@keyframes africa-ping { 0% { transform: scale(.5); opacity: .8; } 100% { transform: scale(1.8); opacity: 0; } }
+.africa-route__label { position: absolute; font-family: var(--font-en); font-weight: 800; font-size: clamp(18px, 3vw, 26px); letter-spacing: .06em; line-height: 1.1; }
+.africa-route__label small { display: block; font-family: var(--font-jp); font-size: 11px; font-weight: 700; letter-spacing: .04em; opacity: .85; margin-top: 4px; }
+.africa-route__label--from { right: 8%; top: 8%; text-align: right; }
+.africa-route__label--to { left: 8%; bottom: 8%; color: #e8c46a; }
+@media (prefers-reduced-motion: reduce) { .africa-route__path, .africa-route__ring { animation: none; } }
