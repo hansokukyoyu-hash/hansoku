@@ -1,7 +1,7 @@
 # サイト仕様書（農機具・工具買取サイト）
 
 > **変更前に必ずこのファイルを読むこと。** ここに書かれた slug・フィールド名・設定キー・依存関係は、本番データ（投稿・メタ・設定）と結びついています。名前を変えると表示が壊れたりデータが見えなくなったりします。
-> 最終更新：2026-10-05（テーマ 1.4.0）
+> 最終更新：2026-10-05（テーマ 1.4.1）
 
 ---
 
@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.4.0（本番は 1.3.0。1.4.0 は反映待ち） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.4.1（本番は 1.4.0。1.4.1 は反映待ち） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -125,7 +125,7 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 | キー | 内容 |
 |---|---|
 | `tk_sheets_enable` | 自動追記のオン／オフ（`'1'` / `''`、既定オフ） |
-| `tk_sheets_url` | Apps Script ウェブアプリ URL（`https://script.google.com/macros/s/…/exec` 以外は保存されない） |
+| `tk_sheets_url` | Apps Script ウェブアプリ URL。`https://script.google.com/macros/s/<ID>/exec` か `https://script.google.com/a/macros/<ドメイン>/s/<ID>/exec`（1.4.1〜）。デプロイ ID（20 文字以上の英数字・`_`・`-`）だけの入力は `/macros/s/<ID>/exec` に組み立てて保存（1.4.1〜。WAF 回避用）。形式違いは保存せずエラー表示（1.4.1〜） |
 | `tk_sheets_token` | 合言葉（英数字のみ）。Apps Script の Script Properties `TOKEN` と同じ値 |
 
 オプション：`tk_sheets_last_ok`（最終成功日時）、`tk_sheets_last_error`（最終エラー。値があると管理画面に警告。次の成功で消える）

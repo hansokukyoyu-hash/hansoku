@@ -17,10 +17,27 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * 送信先 URL が許可されたものか
+ *
+ * - https://script.google.com/macros/s/<デプロイID>/exec
+ * - https://script.google.com/a/macros/<ドメイン>/s/<デプロイID>/exec（Google Workspace のアカウントでデプロイした場合の表示形式）
  */
 function tk_sheets_url_ok( string $url ): bool {
-	$ok = (bool) preg_match( '#^https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec$#', $url );
+	$ok = (bool) preg_match( '#^https://script\.google\.com/(?:a/macros/[A-Za-z0-9.-]+|macros)/s/[A-Za-z0-9_-]+/exec$#', $url );
 	return (bool) apply_filters( 'tk_sheets_allow_url', $ok, $url );
+}
+
+/**
+ * カスタマイザーの入力 → 保存する URL
+ *
+ * デプロイ ID（AKfycb… の部分）だけの入力も受け付けて URL に組み立てる
+ * （サーバーの WAF が URL を含む送信を止める場合の回避策）。
+ */
+function tk_sheets_normalize_url( string $v ): string {
+	$v = trim( $v );
+	if ( preg_match( '/^[A-Za-z0-9_-]{20,}$/', $v ) ) {
+		return 'https://script.google.com/macros/s/' . $v . '/exec';
+	}
+	return $v;
 }
 
 /**

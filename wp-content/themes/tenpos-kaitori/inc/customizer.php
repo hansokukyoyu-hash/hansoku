@@ -81,16 +81,26 @@ add_action(
 			'tk_sheets_url',
 			array(
 				'default'           => '',
-				'sanitize_callback' => fn( $v ) => tk_sheets_url_ok( trim( (string) $v ) ) ? trim( (string) $v ) : '',
+				'sanitize_callback' => function ( $v ) {
+					$url = tk_sheets_normalize_url( (string) $v );
+					return tk_sheets_url_ok( $url ) ? $url : '';
+				},
+				'validate_callback' => function ( $validity, $v ) {
+					$url = tk_sheets_normalize_url( (string) $v );
+					if ( '' !== $url && ! tk_sheets_url_ok( $url ) ) {
+						$validity->add( 'tk_sheets_url', 'Apps Script ウェブアプリの URL（https://script.google.com/…/exec）か、デプロイ ID を入力してください。' );
+					}
+					return $validity;
+				},
 			)
 		);
 		$wp_customize->add_control(
 			'tk_sheets_url',
 			array(
 				'label'       => 'Apps Script ウェブアプリの URL',
-				'description' => 'https://script.google.com/macros/s/…/exec の形式のみ保存できます',
+				'description' => 'https://script.google.com/macros/s/…/exec（または …/a/macros/ドメイン/s/…/exec）の形式。保存時にエラーになる場合は、URL の /s/ と /exec の間のデプロイ ID（AKfycb…）だけを入力してください',
 				'section'     => 'tk_sheets',
-				'type'        => 'url',
+				'type'        => 'text',
 			)
 		);
 		$wp_customize->add_setting(
