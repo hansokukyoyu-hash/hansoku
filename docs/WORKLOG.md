@@ -61,5 +61,9 @@
 - 本番確認（閲覧のみ）：gtag.js 各ページ1回（Google タグ `GT-PZVL6ZGK`、config 1件＝二重計測なし）、google-site-verification あり、check-pages 15 ページ×スマホ/PC 問題なし、check-live 全ページ 200・PHP エラー 0
 - ユーザー確認待ち：GA4 リアルタイムでの計測確認、（コンバージョン計測を有効にした場合）フォーム送信イベント
 
+### GA4 目標設定（査定フォーム送信完了）
+- 調査（本番・閲覧のみ）：Site Kit の CF7 イベントプロバイダが読み込まれており、`wpcf7mailsent` で `contact` イベントを送信。拡張コンバージョンは無効
+- 結論：テーマ変更なし。GA4 で `contact` をキーイベントに登録（ユーザー作業）→ テスト送信でリアルタイム確認
+
 ## 次回
 → `docs/TODO.md`

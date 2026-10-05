@@ -17,6 +17,7 @@
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
+> **目標（GA4 キーイベント）＝査定フォームの送信完了**：Site Kit の CF7 イベントプロバイダが `wpcf7mailsent`（メール送信成功時のみ）で GA4 イベント **`contact`** を送信。テーマ側の計測コードは不要（追加すると二重計上）。農機具／工具の区別はレポートでページ URL（`/agricultural-equipment/`・`/tool/`）により行う。拡張コンバージョン（user_data 送信）は無効（2026-10-05 確認）。有効にする場合はプライバシーポリシー第10条の改訂が必要。
 > アクセス解析タグは **Site Kit のみ**で出力する（テーマ・他プラグインで GA タグを追加しない＝二重計測防止）。テーマは `wp_head` / `wp_body_open` / `wp_footer` を出力しているため Site Kit のタグ挿入に対応。
 | パーマリンク | 投稿名（`/%postname%/`） |
 | 運営会社 | 株式会社テンポスバスターズ（東証上場グループ） |
