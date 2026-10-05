@@ -1,7 +1,7 @@
 # サイト仕様書（農機具・工具買取サイト）
 
 > **変更前に必ずこのファイルを読むこと。** ここに書かれた slug・フィールド名・設定キー・依存関係は、本番データ（投稿・メタ・設定）と結びついています。名前を変えると表示が壊れたりデータが見えなくなったりします。
-> 最終更新：2026-10-05（テーマ 1.4.1）
+> 最終更新：2026-10-05（テーマ 1.5.0）
 
 ---
 
@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.4.1（本番は 1.4.0。1.4.1 は反映待ち） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.0（本番は 1.4.x。1.5.0 は反映待ち） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -79,6 +79,8 @@
 | `glossary` | 用語集 | `/glossary/` | title, editor |
 | `faq` | よくある質問 | `/faq/` | title, editor, page-attributes（並び順＝menu_order） |
 
+※ `tk_sheet_row`（`inc/sheets.php`・1.5.0〜）：スプレッドシート未反映の一時保管。非公開（public=false、管理画面なし、REST・検索・エクスポート対象外）、post_status は `private`、データはメタ `_tk_row`（配列）。Apps Script が取得 → 追記後に削除される。**名前を変えない**（未反映データと切れる）
+
 ### タクソノミー
 | taxonomy | 対象 | slug | 用途 |
 |---|---|---|---|
@@ -124,11 +126,11 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 ### カスタマイザー（外観 → カスタマイズ → スプレッドシート連携）※ 1.4.0 で追加
 | キー | 内容 |
 |---|---|
-| `tk_sheets_enable` | 自動追記のオン／オフ（`'1'` / `''`、既定オフ） |
-| `tk_sheets_url` | Apps Script ウェブアプリ URL。`https://script.google.com/macros/s/<ID>/exec` か `https://script.google.com/a/macros/<ドメイン>/s/<ID>/exec`（1.4.1〜）。デプロイ ID（20 文字以上の英数字・`_`・`-`）だけの入力は `/macros/s/<ID>/exec` に組み立てて保存（1.4.1〜。WAF 回避用）。形式違いは保存せずエラー表示（1.4.1〜） |
-| `tk_sheets_token` | 合言葉（英数字のみ）。Apps Script の Script Properties `TOKEN` と同じ値 |
+| `tk_sheets_enable` | 自動追記のオン／オフ（`'1'` / `''`、既定オフ）。オフの間の送信は保管しない |
+| `tk_sheets_token` | 合言葉（英数字のみ）。Apps Script の Script Properties `TOKEN` と同じ値。**20 文字未満だと連携は無効扱い** |
+| ~~`tk_sheets_url`~~ | 1.4.x（サイトから送る方式）の送信先 URL。**1.5.0 で廃止**（入力欄なし・未使用。DB に値が残っていても影響なし） |
 
-オプション：`tk_sheets_last_ok`（最終成功日時）、`tk_sheets_last_error`（最終エラー。値があると管理画面に警告。次の成功で消える）
+オプション：`tk_sheets_last_pull`（Apps Script が最後に取りに来た日時）。1.4.x の `tk_sheets_last_ok` / `tk_sheets_last_error` は 1.5.0 で管理画面表示時に削除
 
 ### カスタマイザー（外観 → カスタマイズ → 農機具LP：アフリカ訴求）※ 1.1.0 で追加
 | キー | 内容 | 既定値 |
@@ -198,14 +200,20 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 - フォーム ID 未設定時は電話導線を表示（管理者にのみ設定案内）。
 - 送信内容は Flamingo に保存される（個人情報。管理者アカウントは最小限に）。
 
-### スプレッドシート連携（`inc/sheets.php`・1.4.0）
-- `wpcf7_mail_sent`（メール送信成功後）に、テーマの3フォーム（`tk_cf7_agri` / `tk_cf7_tool` / `tk_cf7_contact` の ID）の送信内容だけを Apps Script へ JSON で POST。302 転送をたどり、転送先の `{"ok":true}` で成功判定（タイムアウト 8 秒）
-- 送るデータ：受付ID（`TK-YYYYMMDD-HHMMSS-XXXX`）・日時・フォーム種別・`your-name/tel/email/pref/kind/model/message`・写真の有無（ファイルは送らない）・送信ページ URL・トークン
-- 失敗してもフォームは完了表示（問い合わせは Flamingo・メールに保存済み）。失敗内容は `tk_sheets_last_error` と error_log
-- 送信先は script.google.com のみ（フィルター `tk_sheets_allow_url` はローカル検証専用）
-- シート側：`docs/gas/Code.gs`（トークン照合・受付ID の重複防止・数式インジェクション対策（`= + - @` で始まる値に `'`））／手順 `docs/gas/README.md`
-- **シートの列順・見出しは変えない**（右端への追加は可）。ウェブアプリのデプロイは「実行：自分／アクセス：全員」が必要（サーバーから未ログインで送るため）。Workspace の管理設定で「全員」が選べない場合は管理者の許可かサービスアカウント方式が必要
+### スプレッドシート連携（`inc/sheets.php`・1.5.0〜 取得方式）
+- **方式**：サイトは送らない。スプレッドシートの Apps Script（`docs/gas/Code.gs`）が 5 分ごとのトリガーで REST API を呼んで取得する（Workspace の「組織内のみ」でも動く。1.4.x の「サイト → Apps Script ウェブアプリへ POST」方式は、ウェブアプリを「全員」に公開できず廃止）
+- `wpcf7_mail_sent`（メール送信成功後）に、テーマの3フォーム（`tk_cf7_agri` / `tk_cf7_tool` / `tk_cf7_contact` の ID）の送信内容だけを `tk_sheet_row` に一時保管（連携オン＋トークン 20 文字以上のときのみ）
+- 保管するデータ：受付ID（`TK-YYYYMMDD-HHMMSS-XXXX`）・日時・フォーム種別・`your-name/tel/email/pref/kind/model/message`・写真の有無（ファイルは保管しない）・送信ページ URL
+- REST API（どちらも POST・JSON・本文の `token` で認証。不一致・連携オフは 403。`Cache-Control: no-store`）
+  - `/wp-json/tk/v1/sheets/pull`：未反映を古い順に最大 50 件 `{ok, rows:[{qid, id, submitted_at, form_label, name, tel, email, pref, kind, model, message, photo, page_url}], more}`。`tk_sheets_last_pull` を更新
+  - `/wp-json/tk/v1/sheets/ack`：`{token, ids:[qid…]}` → `tk_sheet_row` のものだけ削除（他の投稿は消せない）
+  - **パス・パラメータ名を変えない**（本番の Apps Script と切れる）
+- Apps Script 側：取得 → 受付ID で重複除外 → 一括追記 → ack。`more` なら続けて取得（1回最大 10 巡）。失敗は例外 → Google から所有者へエラー通知メール。数式インジェクション対策（`= + - @` で始まる値に `'`）。`SITE` 定数にサイト URL
+- 管理画面通知：連携オンで 30 分以上前の未反映があると警告（件数・最終取得日時）。カスタマイザーの説明欄に最終取得・未反映件数
+- 失敗してもフォームは完了表示（問い合わせは Flamingo・メールに保存済み）
+- 手順 `docs/gas/README.md`。**シートの列順・見出し・シート名「問い合わせ」は変えない**（右端への追加は可）
 - シートの共有は社内限定のままでよい（Apps Script は所有者権限で書き込む）
+- ローカル検証：`node tools/gas-sim.cjs http://localhost:8090/kaitori <トークン>`（Code.gs をスタブで擬似実行し、実際に REST を呼ぶ。localhost 専用）
 
 ### 構造化データ（`inc/schema.php`）
 トップ：Organization／LP・/faq/：FAQPage（FAQ 投稿から生成）／実績詳細：Product+Offer／記事：Article（連載は CreativeWorkSeries）+BreadcrumbList／用語集：DefinedTermSet。

@@ -50,16 +50,16 @@ add_action(
 		}
 
 		// スプレッドシート連携（問い合わせ・査定依頼の自動追記）.
-		$tk_last_ok  = get_option( 'tk_sheets_last_ok' );
-		$tk_last_err = get_option( 'tk_sheets_last_error' );
+		$tk_last_pull = get_option( 'tk_sheets_last_pull' );
+		$tk_pending   = tk_sheets_pending();
 		$wp_customize->add_section(
 			'tk_sheets',
 			array(
 				'title'       => 'スプレッドシート連携',
 				'priority'    => 32,
-				'description' => '査定・問い合わせフォームの送信内容を Google スプレッドシートに自動追記します。設定手順はテーマの docs/gas/README.md。'
-					. ( $tk_last_ok ? "\n最終成功：{$tk_last_ok}" : '' )
-					. ( $tk_last_err ? "\n最終エラー：{$tk_last_err}" : '' ),
+				'description' => '査定・問い合わせフォームの送信内容を、スプレッドシートの Apps Script が5分ごとに取りに来て追記します。設定手順はテーマの docs/gas/README.md。'
+					. "\n最終取得：" . ( $tk_last_pull ? $tk_last_pull : 'なし' )
+					. "\n未反映：{$tk_pending['count']} 件",
 			)
 		);
 		$wp_customize->add_setting(
@@ -78,32 +78,6 @@ add_action(
 			)
 		);
 		$wp_customize->add_setting(
-			'tk_sheets_url',
-			array(
-				'default'           => '',
-				'sanitize_callback' => function ( $v ) {
-					$url = tk_sheets_normalize_url( (string) $v );
-					return tk_sheets_url_ok( $url ) ? $url : '';
-				},
-				'validate_callback' => function ( $validity, $v ) {
-					$url = tk_sheets_normalize_url( (string) $v );
-					if ( '' !== $url && ! tk_sheets_url_ok( $url ) ) {
-						$validity->add( 'tk_sheets_url', 'Apps Script ウェブアプリの URL（https://script.google.com/…/exec）か、デプロイ ID を入力してください。' );
-					}
-					return $validity;
-				},
-			)
-		);
-		$wp_customize->add_control(
-			'tk_sheets_url',
-			array(
-				'label'       => 'Apps Script ウェブアプリの URL',
-				'description' => 'https://script.google.com/macros/s/…/exec（または …/a/macros/ドメイン/s/…/exec）の形式。保存時にエラーになる場合は、URL の /s/ と /exec の間のデプロイ ID（AKfycb…）だけを入力してください',
-				'section'     => 'tk_sheets',
-				'type'        => 'text',
-			)
-		);
-		$wp_customize->add_setting(
 			'tk_sheets_token',
 			array(
 				'default'           => '',
@@ -114,7 +88,7 @@ add_action(
 			'tk_sheets_token',
 			array(
 				'label'       => 'トークン（合言葉）',
-				'description' => 'Apps Script の setup 実行時にログに表示された値',
+				'description' => 'Apps Script の setup 実行時にログに表示された値（20 文字未満では動きません）',
 				'section'     => 'tk_sheets',
 				'type'        => 'text',
 			)

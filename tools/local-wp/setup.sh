@@ -38,13 +38,6 @@ ln -sfn "$REPO/wp-content/themes/tenpos-kaitori" "$W/wp-content/themes/tenpos-ka
 # ローカル専用：メール送信を成功扱いにする（送信完了の表示・計測を検証するため。本番には入れない）
 mkdir -p "$W/wp-content/mu-plugins"
 cp "$REPO"/tools/local-wp/mu-plugins/*.php "$W/wp-content/mu-plugins/"
-# ローカル専用：Apps Script の代わりの受け口（スプレッドシート連携の検証用）
-mkdir -p "$BASE/www/mock-gas"
-cp "$REPO"/tools/local-wp/mock-gas/*.php "$BASE/www/mock-gas/"
-MOCK_PORT=$((PORT + 1))
-if ! curl -s -o /dev/null "http://localhost:$MOCK_PORT/echo.php"; then
-  (cd "$BASE/www/mock-gas" && setsid nohup php -S "localhost:$MOCK_PORT" -t "$BASE/www/mock-gas" > "$BASE/mock-gas.log" 2>&1 < /dev/null &)
-fi
 cp "$REPO/tools/local-wp/router.php" "$BASE/router.php"
 
 if ! curl -s -o /dev/null "http://localhost:$PORT/"; then
@@ -75,7 +68,7 @@ $WP option update siteurl "$URL" >/dev/null
 $WP rewrite flush >/dev/null
 
 echo "ローカル環境: $URL  （管理画面 admin / localonly）"
-echo "擬似 Apps Script: http://localhost:$MOCK_PORT/exec.php（トークン LOCALTOKEN123、受信内容は $BASE/www/mock-gas/rows.jsonl）"
+echo "スプレッドシート連携の確認: node tools/gas-sim.cjs $URL <トークン>（Apps Script を擬似実行）"
 # WP-CLI 実行時の警告（HTTP_HOST 等）が混ざるので、確認前に debug.log を空にする
 : > "$W/wp-content/debug.log"
 echo "debug.log : $W/wp-content/debug.log（空にしました。ページ確認後に中身を見る）"
