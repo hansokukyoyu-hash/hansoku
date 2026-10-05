@@ -1,7 +1,7 @@
 # サイト仕様書（農機具・工具買取サイト）
 
 > **変更前に必ずこのファイルを読むこと。** ここに書かれた slug・フィールド名・設定キー・依存関係は、本番データ（投稿・メタ・設定）と結びついています。名前を変えると表示が壊れたりデータが見えなくなったりします。
-> 最終更新：2026-10-05（テーマ 1.1.0）
+> 最終更新：2026-10-05（テーマ 1.2.0）
 
 ---
 
@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.1.0（本番反映済み 2026-10-05） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.2.0（本番は 1.1.0。1.2.0 は反映待ち） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -180,7 +180,11 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 ### フォーム（Contact Form 7）
 - **テーマは CF7 の CSS を読み込まない**（`wpcf7_load_css` false）。代わりに `main.css` 末尾でスタイル。CF7 の更新で新しい要素が出た場合はテーマ側に CSS を足す（例：1.0.1 で `.hidden-fields-container` を非表示に追加）。
 - CF7 の JS はフォームを表示するページだけ読み込む（`wpcf7_enqueue_scripts()`）。
-- フォーム本文は `docs/cf7-agri.txt` / `docs/cf7-tool.txt` のひな形。テーマの CSS はこのマークアップ（`.form-grid` `.field` `.req` `.hint`）前提。
+- フォーム本文は `docs/cf7-agri.txt` / `docs/cf7-tool.txt` / `docs/cf7-contact.txt`（総合問い合わせ・1.2.0 追加）のひな形。**フォームの項目は本番の CF7 管理画面に保存されている**（テーマを更新しても項目は変わらない。項目を変えるときは CF7 側の編集が必要）。
+- お問い合わせ内容 `your-message`：`[textarea your-message maxlength:500]`（査定フォームは任意、総合問い合わせは必須 `textarea*`）。500 文字制限は CF7 がサーバー側でも検証。残り文字数は `[count your-message down]`。CF7 のカウンターは keyup でしか更新しないため、`main.js` が input 時に keyup を発火して貼り付け時も更新。
+- 画面下 Dock の右ボタン：**トップページだけ**「買取の総合窓口／お問い合わせ」→ `/contact/`（`tk_cf7_contact` のフォーム）。LP は「WEB査定」→ `#form`、その他のハブ系ページは「WEB査定」→ トップの `#select`（`parts/dock.php`、キー `form_label` で文言変更可）。
+- GA4：`/contact/` の送信も Site Kit により `contact` イベントで計測（査定と総合問い合わせはページ URL で区別）。
+- 旧記述：テーマの CSS はこのマークアップ（`.form-grid` `.field` `.req` `.hint`）前提。
 - フォーム ID 未設定時は電話導線を表示（管理者にのみ設定案内）。
 - 送信内容は Flamingo に保存される（個人情報。管理者アカウントは最小限に）。
 

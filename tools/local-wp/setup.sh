@@ -52,7 +52,7 @@ if ! $WP core is-installed 2>/dev/null; then
   # 本番に合わせてプライバシーポリシーを公開状態にする（ローカルのみ）
   $WP eval '$id = (int) get_option( "wp_page_for_privacy_policy" ); if ( $id ) { wp_update_post( array( "ID" => $id, "post_status" => "publish" ) ); }'
   $WP eval '
-    foreach ( array( "agri" => "農機具査定", "tool" => "工具査定" ) as $k => $t ) {
+    foreach ( array( "agri" => "農機具査定", "tool" => "工具査定", "contact" => "総合問い合わせ" ) as $k => $t ) {
       $f = WPCF7_ContactForm::get_template( array( "title" => $t ) );
       $f->set_properties( array( "form" => file_get_contents( get_template_directory() . "/docs/cf7-" . $k . ".txt" ) ) );
       set_theme_mod( "tk_cf7_" . $k, (string) $f->save() );

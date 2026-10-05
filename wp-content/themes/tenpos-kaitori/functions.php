@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TK_VERSION', '1.1.0' );
+define( 'TK_VERSION', '1.2.0' );
 define( 'TK_DIR', get_template_directory() );
 define( 'TK_URI', get_template_directory_uri() );
 

@@ -1,10 +1,11 @@
-■ Contact Form 7「メール」タブの設定例（農機具・工具 共通）
+■ Contact Form 7「メール」タブの設定例（農機具・工具・総合問い合わせ 共通）
 
 送信先:     （社内の受付アドレス）
-送信元:     [_site_title] <wordpress@tenpos.online>
+送信元:     [_site_title] <kaitori@tenpos.online>
 題名:       【査定依頼】[your-kind]／[your-pref]／[your-name] 様
+            （総合問い合わせは【お問い合わせ】[your-kind]／[your-name] 様）
 追加ヘッダー: Reply-To: （受付アドレス）
-ファイル添付: [your-photo]
+ファイル添付: [your-photo]（査定フォームのみ）
 
 メッセージ本文:
 ------------------------------------------------------------
@@ -15,6 +16,10 @@
 都道府県　: [your-pref]
 種類　　　: [your-kind]
 メーカー・型番: [your-model]（工具フォームのみ）
+メール　　: [your-email]（総合問い合わせのみ）
+
+お問い合わせ内容:
+[your-message]
 
 送信ページ: [_url]
 送信日時　: [_date] [_time]

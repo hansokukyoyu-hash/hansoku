@@ -3,7 +3,9 @@
  * フローティング Dock（電話／メニュー／WEB査定）とメニューシート
  *
  * 各テンプレートで tk_dock_config( [...] ) を呼ぶと上書きできます。
- *   form_href / form_small / tel_small / sheet_title / pct_label / switch_href / switch_small / switch_strong
+ *   form_href / form_small / form_label / tel_small / sheet_title / pct_label / switch_href / switch_small / switch_strong
+ *
+ * トップページの右ボタンは「買取の総合問い合わせ」（/contact/）。それ以外は WEB査定（LP の #form、ハブ系ページはトップの #select）。
  *
  * シートの目次は本文中の [data-nav] 要素から JS が自動生成します。
  *
@@ -16,8 +18,9 @@ $tk_tone = tk_theme_tone();
 
 $tk_defaults = array(
 	'hub'  => array(
-		'form_href'     => is_front_page() ? '#select' : home_url( '/#select' ),
-		'form_small'    => '入力1分・無料',
+		'form_href'     => is_front_page() ? tk_page_url( 'contact' ) : home_url( '/#select' ),
+		'form_small'    => is_front_page() ? '買取の総合窓口' : '入力1分・無料',
+		'form_label'    => is_front_page() ? 'お問い合わせ' : 'WEB査定',
 		'tel_small'     => '無料・年中無休',
 		'sheet_title'   => 'MENU',
 		'pct_label'     => 'このページ',
@@ -59,7 +62,7 @@ $c = array_merge( $tk_defaults[ $tk_tone ], tk_dock_config() );
 			<svg class="dock__ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="dock__ring-track" cx="20" cy="20" r="18" pathLength="100"/><circle class="dock__ring-bar" cx="20" cy="20" r="18" pathLength="100"/></svg>
 			<span class="dock__orb-icon" aria-hidden="true"><i></i><i></i></span>
 		</button>
-		<a class="dock__btn dock__btn--form" href="<?php echo esc_url( $c['form_href'] ); ?>"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?><span><small><?php echo esc_html( $c['form_small'] ); ?></small>WEB査定</span></a>
+		<a class="dock__btn dock__btn--form" href="<?php echo esc_url( $c['form_href'] ); ?>"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?><span><small><?php echo esc_html( $c['form_small'] ); ?></small><?php echo esc_html( $c['form_label'] ?? 'WEB査定' ); ?></span></a>
 	</div>
 </div>
 

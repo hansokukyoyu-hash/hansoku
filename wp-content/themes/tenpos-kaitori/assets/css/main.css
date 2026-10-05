@@ -1108,3 +1108,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .africa-route__label--from { right: 8%; top: 8%; text-align: right; }
 .africa-route__label--to { left: 8%; bottom: 8%; color: #e8c46a; }
 @media (prefers-reduced-motion: reduce) { .africa-route__path, .africa-route__ring { animation: none; } }
+
+/* CF7：お問い合わせ内容（textarea・文字数カウンター）1.2.0 */
+.wpcf7 .field textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
+.wpcf7 .field .hint .wpcf7-character-count { font-family: var(--font-en); font-weight: 800; color: var(--ink); }
+.wpcf7 .field .hint .wpcf7-character-count.too-long { color: var(--tool-red); }

@@ -387,5 +387,15 @@
     if (end) markIO.observe(end);
   }
 
+  /* ------------------------------------------------------------------
+     CF7 文字数カウンター：貼り付け・音声入力でも更新（CF7 は keyup のみで更新するため）
+     ------------------------------------------------------------------ */
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t instanceof HTMLTextAreaElement && t.closest('.wpcf7') && !e.isComposing) {
+      t.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+    }
+  });
+
   onScroll();
 })();
