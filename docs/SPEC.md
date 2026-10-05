@@ -1,7 +1,7 @@
 # サイト仕様書（農機具・工具買取サイト）
 
 > **変更前に必ずこのファイルを読むこと。** ここに書かれた slug・フィールド名・設定キー・依存関係は、本番データ（投稿・メタ・設定）と結びついています。名前を変えると表示が壊れたりデータが見えなくなったりします。
-> 最終更新：2026-10-05（テーマ 1.5.0）
+> 最終更新：2026-10-05（テーマ 1.5.1）
 
 ---
 
@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.0（本番は 1.4.x。1.5.0 は反映待ち） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.1（本番は 1.5.0。1.5.1 は反映待ち） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
@@ -203,6 +203,7 @@ ACF フィールドキー（`field_tk_*`）・グループキー（`group_tk_*`�
 ### スプレッドシート連携（`inc/sheets.php`・1.5.0〜 取得方式）
 - **方式**：サイトは送らない。スプレッドシートの Apps Script（`docs/gas/Code.gs`）が 5 分ごとのトリガーで REST API を呼んで取得する（Workspace の「組織内のみ」でも動く。1.4.x の「サイト → Apps Script ウェブアプリへ POST」方式は、ウェブアプリを「全員」に公開できず廃止）
 - `wpcf7_mail_sent`（メール送信成功後）に、テーマの3フォーム（`tk_cf7_agri` / `tk_cf7_tool` / `tk_cf7_contact` の ID）の送信内容だけを `tk_sheet_row` に一時保管（連携オン＋トークン 20 文字以上のときのみ）
+  - フォームの判定（`tk_sheets_form_type()`）：カスタマイザーの値が数字なら投稿 ID、英数字なら CF7 5.8 以降のショートコード ID（フォームのハッシュの先頭 7 文字）として照合（1.5.1〜。1.5.0 は数字のみで、英数字 ID だと保管されなかった）
 - 保管するデータ：受付ID（`TK-YYYYMMDD-HHMMSS-XXXX`）・日時・フォーム種別・`your-name/tel/email/pref/kind/model/message`・写真の有無（ファイルは保管しない）・送信ページ URL
 - REST API（どちらも POST・JSON・本文の `token` で認証。不一致・連携オフは 403。`Cache-Control: no-store`）
   - `/wp-json/tk/v1/sheets/pull`：未反映を古い順に最大 50 件 `{ok, rows:[{qid, id, submitted_at, form_label, name, tel, email, pref, kind, model, message, photo, page_url}], more}`。`tk_sheets_last_pull` を更新

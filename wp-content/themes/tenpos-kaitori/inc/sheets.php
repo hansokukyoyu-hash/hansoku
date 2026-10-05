@@ -43,15 +43,24 @@ add_action(
 );
 
 /**
- * CF7 フォーム ID → 種別
+ * CF7 フォーム → 種別
+ *
+ * カスタマイザーの値は数字の ID（例 62）でも、CF7 5.8 以降のショートコードの英数字 ID（例 1a2b3c4。フォームのハッシュの先頭 7 文字）でもよい.
+ *
+ * @param WPCF7_ContactForm $form フォーム.
  */
-function tk_sheets_form_type( int $form_id ): string {
+function tk_sheets_form_type( $form ): string {
+	$hash = method_exists( $form, 'hash' ) ? (string) $form->hash() : '';
 	foreach ( array(
 		'agri'    => 'tk_cf7_agri',
 		'tool'    => 'tk_cf7_tool',
 		'contact' => 'tk_cf7_contact',
 	) as $type => $key ) {
-		if ( (int) tk_opt( $key ) === $form_id ) {
+		$v = trim( tk_opt( $key ) );
+		if ( '' === $v ) {
+			continue;
+		}
+		if ( ctype_digit( $v ) ? (int) $v === (int) $form->id() : ( strlen( $v ) >= 7 && $hash && str_starts_with( $hash, $v ) ) ) {
 			return $type;
 		}
 	}
@@ -70,7 +79,7 @@ function tk_sheets_payload( $form, $submission ): array {
 		$v = $posted[ $key ] ?? '';
 		return trim( is_array( $v ) ? implode( '、', $v ) : (string) $v );
 	};
-	$type   = tk_sheets_form_type( (int) $form->id() );
+	$type   = tk_sheets_form_type( $form );
 	$labels = array(
 		'agri'    => '農機具査定',
 		'tool'    => '工具査定',
@@ -132,7 +141,7 @@ add_action(
 			return;
 		}
 		$submission = WPCF7_Submission::get_instance();
-		if ( ! $submission || ! tk_sheets_form_type( (int) $form->id() ) ) {
+		if ( ! $submission || ! tk_sheets_form_type( $form ) ) {
 			return; // テーマの 3 フォーム以外は保管しない.
 		}
 		$payload = tk_sheets_payload( $form, $submission );
