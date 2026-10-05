@@ -35,6 +35,9 @@ if [ ! -f "$W/wp-config.php" ]; then
 fi
 
 ln -sfn "$REPO/wp-content/themes/tenpos-kaitori" "$W/wp-content/themes/tenpos-kaitori"
+# ローカル専用：メール送信を成功扱いにする（送信完了の表示・計測を検証するため。本番には入れない）
+mkdir -p "$W/wp-content/mu-plugins"
+cp "$REPO/tools/local-wp/mu-plugins/local-mail-ok.php" "$W/wp-content/mu-plugins/local-mail-ok.php"
 cp "$REPO/tools/local-wp/router.php" "$BASE/router.php"
 
 if ! curl -s -o /dev/null "http://localhost:$PORT/"; then

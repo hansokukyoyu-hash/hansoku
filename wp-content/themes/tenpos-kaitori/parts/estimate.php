@@ -23,6 +23,7 @@ $tk_tool  = 'tool' === $tk_genre;
 				<h3>かんたん査定フォーム</h3>
 				<p class="lead"><?php echo $tk_tool ? '入力は1分で完了します。' : '入力は1分で完了します。担当者からお電話でご連絡します。'; ?></p>
 				<?php tk_render_cf7( $tk_tool ? 'tk_cf7_tool' : 'tk_cf7_agri' ); ?>
+				<?php get_template_part( 'parts/form-done', null, array( 'type' => 'estimate' ) ); ?>
 				<p class="micro"><span>査定料・キャンセル料0円</span><span>強引な営業は一切ありません</span></p>
 			</div>
 			<div class="side-card reveal" style="--d:.1s">

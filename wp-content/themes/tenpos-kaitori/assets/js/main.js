@@ -397,5 +397,19 @@
     }
   });
 
+  /* ------------------------------------------------------------------
+     CF7 送信完了：フォームを「送信が完了しました」の表示に切り替える
+     （wpcf7mailsent＝メール送信成功時のみ。入力エラー・送信失敗では切り替えない）
+     ------------------------------------------------------------------ */
+  document.addEventListener('wpcf7mailsent', (e) => {
+    const card = e.target.closest('.form-card');
+    const done = card && $('.form-done', card);
+    if (!done) return;
+    card.classList.add('is-done');
+    const top = card.getBoundingClientRect().top + window.scrollY - (($('.site-header') || {}).offsetHeight || 0) - (($('.anchor-tabs') || {}).offsetHeight || 0) - 16;
+    window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+    done.focus({ preventScroll: true });
+  });
+
   onScroll();
 })();
