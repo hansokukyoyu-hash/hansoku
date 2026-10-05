@@ -56,5 +56,10 @@
 - 気づいた点：根拠未確認の数字・表現がテーマに残っている（TODO に一覧化。今回は未変更）
 - 本番反映（ユーザー実施）→ 本番確認（閲覧のみ）：帯・#africa セクション・目次タブ（africa を先頭に7件）と data-nav の一致、check-live 全ページ 200・PHP エラー 0、check-pages 15 ページ×スマホ/PC「問題なし」
 
+### Site Kit by Google 導入（ユーザー実施）
+- 事前検証：ローカル再現環境に Site Kit 1.188.0 を有効化 → check-pages 15 ページ OK、debug.log 0 行（テーマ変更不要）
+- 本番確認（閲覧のみ）：gtag.js 各ページ1回（Google タグ `GT-PZVL6ZGK`、config 1件＝二重計測なし）、google-site-verification あり、check-pages 15 ページ×スマホ/PC 問題なし、check-live 全ページ 200・PHP エラー 0
+- ユーザー確認待ち：GA4 リアルタイムでの計測確認、（コンバージョン計測を有効にした場合）フォーム送信イベント
+
 ## 次回
 → `docs/TODO.md`

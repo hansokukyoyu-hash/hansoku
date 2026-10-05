@@ -15,7 +15,9 @@
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
 | テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.1.0（本番反映済み 2026-10-05） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
-| その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存） |
+| その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
+
+> アクセス解析タグは **Site Kit のみ**で出力する（テーマ・他プラグインで GA タグを追加しない＝二重計測防止）。テーマは `wp_head` / `wp_body_open` / `wp_footer` を出力しているため Site Kit のタグ挿入に対応。
 | パーマリンク | 投稿名（`/%postname%/`） |
 | 運営会社 | 株式会社テンポスバスターズ（東証上場グループ） |
 
