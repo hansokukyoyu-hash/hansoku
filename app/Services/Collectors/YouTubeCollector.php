@@ -12,12 +12,15 @@ use Illuminate\Support\Facades\Http;
 /**
  * YouTubeショート。日次の再生回数は YouTube Analytics API が直接返すのでそのまま保存する。
  * 動画ごとの累計(モード「イ」・投稿別)は動画単位のレポートと Data API で取る。
+ *
+ * creatorContentType はフィルタには使えない(400 になる)ため、ディメンションとして取得し、
+ * SHORTS の行だけを使う。
  */
 class YouTubeCollector extends Collector
 {
     private const ANALYTICS = 'https://youtubeanalytics.googleapis.com/v2/reports';
 
-    private const SHORTS = 'creatorContentType==SHORTS';
+    private const SHORTS = 'SHORTS';
 
     public function __construct(MetricsRecorder $recorder, private readonly GoogleOAuth $oauth)
     {
@@ -30,15 +33,22 @@ class YouTubeCollector extends Collector
         $today = now()->toDateString();
 
         // 直近7日分を毎回取り直す(YouTube側の集計は1〜2日遅れて確定するため)
+        $start = now()->subDays(7)->startOfDay();
         $daily = $this->report($token, [
-            'startDate' => now()->subDays(7)->toDateString(),
+            'startDate' => $start->toDateString(),
             'endDate' => $today,
             'metrics' => 'views',
-            'dimensions' => 'day',
-            'filters' => self::SHORTS,
+            'dimensions' => 'day,creatorContentType',
         ]);
-        foreach ($daily['rows'] ?? [] as [$day, $views]) {
-            $this->recorder->putDaily($account, Carbon::parse($day), 'short', (int) $views);
+        $byDay = [];
+        foreach ($daily['rows'] ?? [] as [$day, $type, $views]) {
+            if ($type === self::SHORTS) {
+                $byDay[$day] = (int) $views;
+            }
+        }
+        // ショートの再生が無い日は行が返らないので 0 を入れる
+        for ($day = $start->copy(); $day->lte(now()); $day->addDay()) {
+            $this->recorder->putDaily($account, $day, 'short', $byDay[$day->toDateString()] ?? 0);
         }
 
         // ショートごとの累計再生回数(上位200本)
@@ -46,14 +56,15 @@ class YouTubeCollector extends Collector
             'startDate' => '2010-01-01',
             'endDate' => $today,
             'metrics' => 'views',
-            'dimensions' => 'video',
-            'filters' => self::SHORTS,
+            'dimensions' => 'video,creatorContentType',
             'sort' => '-views',
             'maxResults' => 200,
         ]);
         $views = [];
-        foreach ($videos['rows'] ?? [] as [$videoId, $count]) {
-            $views[$videoId] = (int) $count;
+        foreach ($videos['rows'] ?? [] as [$videoId, $type, $count]) {
+            if ($type === self::SHORTS) {
+                $views[$videoId] = (int) $count;
+            }
         }
 
         foreach (array_chunk(array_keys($views), 50) as $ids) {
@@ -78,7 +89,7 @@ class YouTubeCollector extends Collector
             }
         }
 
-        return sprintf('日次 %d 日分、ショート %d 本を更新', count($daily['rows'] ?? []), count($views));
+        return sprintf('日次 %d 日分、ショート %d 本を更新', count($byDay), count($views));
     }
 
     private function report(string $token, array $params): array

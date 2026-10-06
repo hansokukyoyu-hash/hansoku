@@ -112,9 +112,12 @@ class CollectionTest extends TestCase
         Http::fake([
             'oauth2.googleapis.com/token' => Http::response(['access_token' => 'fresh', 'expires_in' => 3600]),
             'youtubeanalytics.googleapis.com/*' => function ($request) {
+                // creatorContentType はフィルタに使えないのでディメンションで受け取る
+                $this->assertStringNotContainsString('filters=', $request->url());
+
                 return str_contains($request->url(), 'dimensions=day')
-                    ? Http::response(['rows' => [['2026-10-03', 150], ['2026-10-04', 220]]])
-                    : Http::response(['rows' => [['v1', 9000]]]);
+                    ? Http::response(['rows' => [['2026-10-03', 'SHORTS', 150], ['2026-10-04', 'SHORTS', 220], ['2026-10-04', 'VIDEO_ON_DEMAND', 999]]])
+                    : Http::response(['rows' => [['v1', 'SHORTS', 9000], ['v2', 'VIDEO_ON_DEMAND', 50000]]]);
             },
             'www.googleapis.com/youtube/v3/videos*' => Http::response(['items' => [
                 ['id' => 'v1', 'snippet' => ['publishedAt' => '2026-09-20T09:00:00Z', 'title' => 'ショート1']],
@@ -127,7 +130,9 @@ class CollectionTest extends TestCase
         $this->assertSame(220, $this->daily($account, '2026-10-04', 'short'));
         $this->assertSame(9000, Post::where('external_id', 'v1')->value('views'));
         $this->assertSame('fresh', $account->fresh()->credential('access_token'));
-        Http::assertSent(fn ($request) => str_contains($request->url(), 'creatorContentType%3D%3DSHORTS') && $request->hasHeader('Authorization', 'Bearer fresh'));
+        $this->assertSame(0, $this->daily($account, '2026-10-02', 'short'));
+        $this->assertNull(Post::where('external_id', 'v2')->first());
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'creatorContentType') && $request->hasHeader('Authorization', 'Bearer fresh'));
     }
 
     public function test_threads_refreshes_expiring_token(): void
