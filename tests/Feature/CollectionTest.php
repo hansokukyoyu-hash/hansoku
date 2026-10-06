@@ -117,11 +117,15 @@ class CollectionTest extends TestCase
 
                 return str_contains($request->url(), 'dimensions=day')
                     ? Http::response(['rows' => [['2026-10-03', 'SHORTS', 150], ['2026-10-04', 'SHORTS', 220], ['2026-10-04', 'VIDEO_ON_DEMAND', 999]]])
-                    : Http::response(['rows' => [['v1', 'SHORTS', 9000], ['v2', 'VIDEO_ON_DEMAND', 50000]]]);
+                    : Http::response(['rows' => [['v1', 9000], ['v2', 50000], ['v3', 700]]]);
             },
             'www.googleapis.com/youtube/v3/videos*' => Http::response(['items' => [
-                ['id' => 'v1', 'snippet' => ['publishedAt' => '2026-09-20T09:00:00Z', 'title' => 'ショート1']],
+                ['id' => 'v1', 'snippet' => ['publishedAt' => '2026-09-20T09:00:00Z', 'title' => 'ショート1'], 'contentDetails' => ['duration' => 'PT45S']],
+                ['id' => 'v2', 'snippet' => ['title' => '長い動画'], 'contentDetails' => ['duration' => 'PT12M3S']],
+                ['id' => 'v3', 'snippet' => ['title' => '短い普通の動画'], 'contentDetails' => ['duration' => 'PT1M']],
             ]]),
+            'www.youtube.com/shorts/v1' => Http::response('', 200),
+            'www.youtube.com/shorts/v3' => Http::response('', 303, ['Location' => 'https://www.youtube.com/watch?v=v3']),
         ]);
 
         $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
@@ -132,6 +136,7 @@ class CollectionTest extends TestCase
         $this->assertSame('fresh', $account->fresh()->credential('access_token'));
         $this->assertSame(0, $this->daily($account, '2026-10-02', 'short'));
         $this->assertNull(Post::where('external_id', 'v2')->first());
+        $this->assertNull(Post::where('external_id', 'v3')->first());
         Http::assertSent(fn ($request) => str_contains($request->url(), 'creatorContentType') && $request->hasHeader('Authorization', 'Bearer fresh'));
     }
 
@@ -144,8 +149,8 @@ class CollectionTest extends TestCase
                 if (str_contains($request->url(), 'dimensions=day')) {
                     return Http::response(['rows' => [['2026-10-04', 'SHORTS', 220]]]);
                 }
-                // 動画別レポートは 2019-01-01 以降を指定していること
-                $this->assertStringContainsString('startDate=2019-01-01', $request->url());
+                // 動画別レポートはショート開始(2020-09-01)以降を指定していること
+                $this->assertStringContainsString('startDate=2020-09-01', $request->url());
 
                 return Http::response(['error' => ['code' => 400, 'message' => 'The query is not supported.']], 400);
             },
