@@ -51,9 +51,25 @@ class YouTubeCollector extends Collector
             $this->recorder->putDaily($account, $day, 'short', $byDay[$day->toDateString()] ?? 0);
         }
 
-        // ショートごとの累計再生回数(上位200本)
+        // ショートごとの累計再生回数(上位200本)。失敗しても日次の合計は保存済みなので処理は続ける
+        try {
+            $count = $this->collectVideos($account, $token, $today);
+        } catch (SnsApiException $e) {
+            if ($e->needsReconnect) {
+                throw $e;
+            }
+
+            return sprintf('日次 %d 日分を更新(ショート別の取得に失敗: %s)', count($byDay), $e->getMessage());
+        }
+
+        return sprintf('日次 %d 日分、ショート %d 本を更新', count($byDay), $count);
+    }
+
+    private function collectVideos(Account $account, string $token, string $today): int
+    {
+        // creatorContentType のデータは 2019-01-01 以降しか無く、それより前を指定すると 400 になる
         $videos = $this->report($token, [
-            'startDate' => '2010-01-01',
+            'startDate' => '2019-01-01',
             'endDate' => $today,
             'metrics' => 'views',
             'dimensions' => 'video,creatorContentType',
@@ -89,7 +105,7 @@ class YouTubeCollector extends Collector
             }
         }
 
-        return sprintf('日次 %d 日分、ショート %d 本を更新', count($byDay), count($views));
+        return count($views);
     }
 
     private function report(string $token, array $params): array

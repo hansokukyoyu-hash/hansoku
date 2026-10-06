@@ -135,6 +135,29 @@ class CollectionTest extends TestCase
         Http::assertSent(fn ($request) => str_contains($request->url(), 'creatorContentType') && $request->hasHeader('Authorization', 'Bearer fresh'));
     }
 
+    public function test_youtube_keeps_daily_values_when_video_report_fails(): void
+    {
+        $account = Account::factory()->platform(Platform::YouTube)->connected('UC2')->create();
+
+        Http::fake([
+            'youtubeanalytics.googleapis.com/*' => function ($request) {
+                if (str_contains($request->url(), 'dimensions=day')) {
+                    return Http::response(['rows' => [['2026-10-04', 'SHORTS', 220]]]);
+                }
+                // 動画別レポートは 2019-01-01 以降を指定していること
+                $this->assertStringContainsString('startDate=2019-01-01', $request->url());
+
+                return Http::response(['error' => ['code' => 400, 'message' => 'The query is not supported.']], 400);
+            },
+        ]);
+
+        $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+
+        $this->assertSame('success', $log->status);
+        $this->assertStringContainsString('ショート別の取得に失敗', (string) $log->message);
+        $this->assertSame(220, $this->daily($account, '2026-10-04', 'short'));
+    }
+
     public function test_threads_refreshes_expiring_token(): void
     {
         $account = Account::factory()->platform(Platform::Threads)->connected('th1')->create([
