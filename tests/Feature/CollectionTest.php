@@ -135,6 +135,9 @@ class CollectionTest extends TestCase
         $this->assertSame(9000, Post::where('external_id', 'v1')->value('views'));
         $this->assertSame('fresh', $account->fresh()->credential('access_token'));
         $this->assertSame(0, $this->daily($account, '2026-10-02', 'short'));
+        // 初回は過去1年分をさかのぼる
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'dimensions=day') && str_contains($request->url(), 'startDate=2025-10-05'));
+        $this->assertSame(0, $this->daily($account, '2025-10-05', 'short'));
         $this->assertNull(Post::where('external_id', 'v2')->first());
         $this->assertNull(Post::where('external_id', 'v3')->first());
         Http::assertSent(fn ($request) => str_contains($request->url(), 'creatorContentType') && $request->hasHeader('Authorization', 'Bearer fresh'));

@@ -35,8 +35,12 @@ class YouTubeCollector extends Collector
         $token = $this->oauth->freshAccessToken($account);
         $today = now()->toDateString();
 
-        // 直近7日分を毎回取り直す(YouTube側の集計は1〜2日遅れて確定するため)
-        $start = now()->subDays(7)->startOfDay();
+        // 初回は過去1年分をさかのぼって取る。2回目以降は直近7日分を毎回取り直す
+        // (YouTube側の集計は2〜3日遅れて確定するため)
+        // (最古の日次値が1年前に届いていなければ、まださかのぼり取得をしていないとみなす)
+        $oldest = $account->dailyMetrics()->where('format', 'short')->min('date');
+        $backfill = $oldest === null || $oldest > now()->subDays(300)->toDateString();
+        $start = now()->subDays($backfill ? 365 : 7)->startOfDay();
         $daily = $this->report($token, [
             'startDate' => $start->toDateString(),
             'endDate' => $today,
@@ -67,7 +71,7 @@ class YouTubeCollector extends Collector
             return sprintf('日次 %d 日分を更新(ショート別の取得に失敗: %s)', count($byDay), $e->getMessage());
         }
 
-        $note = $byDay === [] ? sprintf('(直近7日にショートの再生データなし。返ってきた種類: %s)', $types === [] ? 'なし' : implode(', ', array_keys($types))) : '';
+        $note = $byDay === [] ? sprintf('(期間内にショートの再生データなし。返ってきた種類: %s)', $types === [] ? 'なし' : implode(', ', array_keys($types))) : '';
 
         return sprintf('日次 %d 日分、ショート %d 本を更新%s', count($byDay), $count, $note);
     }
