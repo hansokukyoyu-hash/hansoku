@@ -13,7 +13,7 @@
 | WordPress | 7.1.2 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
-| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.3（本番は 1.5.1。1.5.3 は反映待ち） |
+| テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.3（本番も 1.5.3） |
 | 必須プラグイン | Advanced Custom Fields（無料版）、Contact Form 7 |
 | その他プラグイン | WP Mail SMTP（お名前メールの SMTP で送信）、Flamingo（CF7 送信内容の保存）、Site Kit by Google（GA4・Search Console。Google タグ ID `GT-PZVL6ZGK`） |
 
