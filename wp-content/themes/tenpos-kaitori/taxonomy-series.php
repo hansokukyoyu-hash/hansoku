@@ -54,7 +54,7 @@ get_header();
 	<section class="section section--tight" id="cta" data-nav="無料査定" style="background:var(--surface)">
 		<div class="container" style="max-width:820px">
 			<div class="inline-cta" style="margin:0">
-				<p><?php echo esc_html( ( tk_genre_label( $tk_genre ) ?: '農機具・工具' ) . 'の整理、まずは無料査定から' ); ?><small>動かない・古い品も対象です。出張費・査定料・キャンセル料0円。</small></p>
+				<p><?php echo esc_html( ( tk_genre_label( $tk_genre ) ?: '農機具・工具' ) . 'の整理、まずは無料査定から' ); ?><small>動かない・古い品も対象です。査定料・キャンセル料0円。</small></p>
 				<a class="btn" href="<?php echo esc_url( tk_form_url( $tk_genre ) ); ?>"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?>無料査定フォームへ</a>
 			</div>
 		</div>

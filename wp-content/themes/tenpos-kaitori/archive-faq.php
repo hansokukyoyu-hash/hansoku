@@ -31,7 +31,7 @@ get_template_part(
 			<?php tk_breadcrumb( array( array( 'よくある質問' ) ) ); ?>
 			<span class="eyebrow">FAQ</span>
 			<h1 class="page-hero__title">よくある質問</h1>
-			<p class="page-hero__lead">出張費・査定料・キャンセル料はすべて0円です。そのほかのご質問をジャンル別にまとめました。</p>
+			<p class="page-hero__lead">査定料・キャンセル料は0円です。そのほかのご質問をジャンル別にまとめました。</p>
 		</div>
 	</section>
 	<?php foreach ( $tk_sections as $tk_genre => $tk_title ) : ?>

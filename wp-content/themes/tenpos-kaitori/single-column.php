@@ -143,7 +143,7 @@ get_header();
 				<?php endif; ?>
 				<div class="aside-box cta">
 					<h2 class="aside-box__h"><?php echo esc_html( ( tk_genre_label( $tk_genre ) ?: '農機具・工具' ) . 'の無料査定' ); ?></h2>
-					<p>動かない・古い品もOK。出張費・査定料0円。</p>
+					<p>動かない・古い品もOK。査定料0円。</p>
 					<a class="btn" href="<?php echo esc_url( tk_form_url( $tk_genre ) ); ?>"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?>無料査定フォームへ</a>
 				</div>
 			</div>

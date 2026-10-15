@@ -21,8 +21,8 @@ get_header();
       </svg>
       <span class="split__label">農家・離農・ご遺族の方</span>
       <h2 class="split__title">農機具を<br>売りたい・処分したい方へ</h2>
-      <p class="split__desc">トラクター・コンバイン・田植機。動かなくても現地まで無料で引き取ります。</p>
-      <span class="btn split__cta">農機具買取ページへ <small>出張費0円</small><svg class="icon arrow"><use href="#i-arrow"/></svg></span>
+      <p class="split__desc">トラクター・コンバイン・田植機。動かない農機具も、現地まで査定に伺います。</p>
+      <span class="btn split__cta">農機具買取ページへ <small>査定料0円</small><svg class="icon arrow"><use href="#i-arrow"/></svg></span>
     </a>
     <a class="split__panel split__panel--tool" href="<?php echo esc_url( tk_page_url( 'tool' ) ); ?>">
       <span class="split__en" aria-hidden="true">PRO<br>TOOLS</span>
@@ -36,14 +36,14 @@ get_header();
       <span class="btn split__cta">工具買取ページへ <small>即日現金化</small><svg class="icon arrow"><use href="#i-arrow"/></svg></span>
     </a>
   </section>
-  <p class="hub-hero-note">査定料・出張費・キャンセル料 すべて0円｜強引な営業は一切ありません</p>
+  <p class="hub-hero-note">査定料・キャンセル料 0円｜強引な営業は一切ありません</p>
 
   <div class="marquee" aria-hidden="true" style="margin-top:28px">
     <div class="marquee__inner">
-      <span class="marquee__item">出張費0円</span><span class="marquee__item">不動車OK</span><span class="marquee__item">サビ・型落ちOK</span><span class="marquee__item">箱なし・本体のみOK</span><span class="marquee__item">全国対応</span><span class="marquee__item">即日現金化</span><span class="marquee__item">まとめて一括査定</span>
+      <span class="marquee__item">査定料0円</span><span class="marquee__item">不動車OK</span><span class="marquee__item">サビ・型落ちOK</span><span class="marquee__item">箱なし・本体のみOK</span><span class="marquee__item">全国対応</span><span class="marquee__item">即日現金化</span><span class="marquee__item">まとめて一括査定</span>
     </div>
     <div class="marquee__inner">
-      <span class="marquee__item">出張費0円</span><span class="marquee__item">不動車OK</span><span class="marquee__item">サビ・型落ちOK</span><span class="marquee__item">箱なし・本体のみOK</span><span class="marquee__item">全国対応</span><span class="marquee__item">即日現金化</span><span class="marquee__item">まとめて一括査定</span>
+      <span class="marquee__item">査定料0円</span><span class="marquee__item">不動車OK</span><span class="marquee__item">サビ・型落ちOK</span><span class="marquee__item">箱なし・本体のみOK</span><span class="marquee__item">全国対応</span><span class="marquee__item">即日現金化</span><span class="marquee__item">まとめて一括査定</span>
     </div>
   </div>
 

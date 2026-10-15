@@ -29,7 +29,7 @@ $tk_tool  = 'tool' === $tk_genre;
 			<div class="side-card reveal" style="--d:.1s">
 				<span class="side-card__bubble"></span>
 				<h3>安心してご依頼いただける<br>3つの約束</h3>
-				<ol><li>査定料・出張費・キャンセル料0円</li><li>金額にご納得いただけなければ断ってOK</li><li>強引な営業・しつこい電話は一切なし</li></ol>
+				<ol><li>査定料・キャンセル料0円</li><li>金額にご納得いただけなければ断ってOK</li><li>強引な営業・しつこい電話は一切なし</li></ol>
 				<p class="side-card__tel">お急ぎの方はお電話でも<a href="<?php echo esc_url( tk_tel_href() ); ?>"><?php echo tk_icon( 'phone' ); // phpcs:ignore ?><?php echo esc_html( tk_opt( 'tk_tel' ) ); ?></a><small><?php echo esc_html( tk_opt( 'tk_tel_hours' ) ); ?></small></p>
 			</div>
 		</div>

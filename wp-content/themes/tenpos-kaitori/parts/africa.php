@@ -15,7 +15,7 @@ $tk_lead  = trim( tk_opt( 'tk_africa_lead' ) );
 $tk_img   = (int) tk_opt( 'tk_africa_image' );
 $tk_steps = array(
 	array( 'gear', '納屋で眠る農機具', '使わなくなった農機具、動かない農機具もご相談ください。' ),
-	array( 'doc', 'テンポスが買取・整備', '査定・引き取りは無料。整備して、再び使える状態にします。' ),
+	array( 'doc', 'テンポスが買取・整備', '査定は無料。整備して、再び使える状態にします。' ),
 	array( 'globe', '海を渡ってアフリカへ', '輸出ルートを通じて、アフリカの農業の現場へ届けます。' ),
 	array( 'truck', '現地の農業で再び活躍', '次の担い手のもとで、もう一度田畑を耕します。' ),
 );
@@ -42,7 +42,7 @@ $tk_steps = array(
 			</ol>
 			<div class="africa__cta reveal">
 				<a class="btn btn--cta" href="#form"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?>無料査定で次の担い手へ</a>
-				<p class="micro"><span>出張費・査定料0円</span><span>動かない農機具もOK</span></p>
+				<p class="micro"><span>査定料0円</span><span>動かない農機具もOK</span></p>
 			</div>
 		</div>
 		<div class="africa__visual reveal-clip">

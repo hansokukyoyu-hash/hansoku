@@ -41,10 +41,10 @@ get_template_part(
           <span class="line"><span style="--d:.05s">動かなくても、</span></span>
           <span class="line"><span style="--d:.15s"><span class="mark">サビていても</span>大丈夫。</span></span>
         </h1>
-        <p class="agri-hero__sub">15年前のトラクター・農機具も、現地まで無料で引き取りに伺います。納屋に眠ったままの農機具、処分費用をかける前に、まずはテンポスへ。</p>
+        <p class="agri-hero__sub">15年前のトラクター・農機具も、現地まで査定に伺います。納屋に眠ったままの農機具、処分費用をかける前に、まずはテンポスへ。</p>
         <div class="trust-badges">
-          <span class="trust-badge"><span>出張費<b>0</b>円</span></span>
-          <span class="trust-badge"><span>査定・<br>キャンセル<b>0</b>円</span></span>
+          <span class="trust-badge"><span>査定料<b>0</b>円</span></span>
+          <span class="trust-badge"><span>キャンセル料<b>0</b>円</span></span>
           <span class="trust-badge"><span>東証上場<br>グループ<br>運営</span></span>
         </div>
         <div class="agri-hero__ctas">
@@ -61,7 +61,7 @@ get_template_part(
           <svg viewBox="0 0 120 80" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="34" cy="56" r="18"/><circle cx="34" cy="56" r="7"/><circle cx="94" cy="62" r="11"/><circle cx="94" cy="62" r="4"/><path d="M22 38V16h24l8 22M54 38h38l8 14M28 16V8M64 38V26h8v12M14 38h92"/></svg>
         </div>
         <?php endif; ?>
-        <div class="agri-hero__float"><svg class="icon" style="color:var(--agri)"><use href="#i-truck"/></svg><span>大型搬出・名義変更<br>すべて代行</span></div>
+        <div class="agri-hero__float"><svg class="icon" style="color:var(--agri)"><use href="#i-truck"/></svg><span>大型搬出・名義変更の<br>代行も対応（有料）</span></div>
         <div class="agri-hero__float agri-hero__float--r"><span>今月の買取</span><b data-count="1284">0</b>台</div>
       </div>
     </div>
@@ -87,7 +87,7 @@ get_template_part(
       <div class="reasons">
         <article class="reason reveal"><span class="ico"><svg class="icon"><use href="#i-gear"/></svg></span><h3>パーツ再利用ネットワーク</h3><p>動かない機械も、エンジン・ミッション・爪などの部品単位で価値を算出します。</p></article>
         <article class="reason reveal" style="--d:.08s"><span class="ico"><svg class="icon"><use href="#i-globe"/></svg></span><h3>海外輸出ルート</h3><p>日本製農機具は海外で高い需要があり、国内相場より高く評価できることがあります。</p></article>
-        <article class="reason reveal" style="--d:.16s"><span class="ico"><svg class="icon"><use href="#i-truck"/></svg></span><h3>全国の自社引き取り網</h3><p>テンポスの全国網で、査定費・出張費・搬出費をいただかずに伺います。</p></article>
+        <article class="reason reveal" style="--d:.16s"><span class="ico"><svg class="icon"><use href="#i-truck"/></svg></span><h3>全国の自社引き取り網</h3><p>テンポスの全国網で、ご自宅・納屋まで査定に伺います。査定料は無料です。</p></article>
       </div>
     </div>
   </section>
@@ -138,12 +138,12 @@ get_template_part(
       <div class="sec-head reveal">
         <span class="eyebrow">Flow</span>
         <h2 class="sec-title">出張買取の流れ</h2>
-        <p class="answer">お問い合わせから現金お支払いまで最短3ステップ。大型搬出や名義変更もテンポスが代行するので、立ち会うだけで完了します。</p>
+        <p class="answer">お問い合わせから現金お支払いまで最短3ステップ。大型搬出や名義変更の手続きも、テンポスで代行できます（有料）。</p>
       </div>
       <div class="stack">
         <article class="stack__card" style="--i:0"><p class="stack__no"><small>STEP</small>01</p><div><h3>お問い合わせ</h3><p>査定フォームに入力するだけ（1分）。型式がわからなくても大丈夫です。</p><div class="tags"><span>WEB査定フォーム</span><span>電話相談</span><span>年中無休</span></div></div><div class="ph" data-label="PHOTO：フォーム入力"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><use href="#i-edit"/></svg></div></article>
-        <article class="stack__card" style="--i:1"><p class="stack__no"><small>STEP</small>02</p><div><h3>現地確認・査定</h3><p>専門スタッフがご自宅・納屋まで訪問。その場で金額をご提示します。</p><div class="tags"><span>出張費0円</span><span>査定料0円</span><span>キャンセル無料</span></div></div><div class="ph" data-label="PHOTO：査定スタッフ"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><use href="#i-doc"/></svg></div></article>
-        <article class="stack__card" style="--i:2"><p class="stack__no"><small>STEP</small>03</p><div><h3>その場で現金お支払い＆引き取り</h3><p>大型の搬出・名義変更手続きもテンポスがすべて代行します。</p><div class="tags"><span>即日現金</span><span>搬出代行</span><span>名義変更代行</span></div></div><div class="ph" data-label="PHOTO：積み込み"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><use href="#i-truck"/></svg></div></article>
+        <article class="stack__card" style="--i:1"><p class="stack__no"><small>STEP</small>02</p><div><h3>現地確認・査定</h3><p>専門スタッフがご自宅・納屋まで訪問。その場で金額をご提示します。</p><div class="tags"><span>査定料0円</span><span>キャンセル無料</span></div></div><div class="ph" data-label="PHOTO：査定スタッフ"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><use href="#i-doc"/></svg></div></article>
+        <article class="stack__card" style="--i:2"><p class="stack__no"><small>STEP</small>03</p><div><h3>その場で現金お支払い＆引き取り</h3><p>大型の搬出・名義変更手続きもテンポスで代行できます（有料）。</p><div class="tags"><span>即日現金</span><span>搬出代行（有料）</span><span>名義変更代行（有料）</span></div></div><div class="ph" data-label="PHOTO：積み込み"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><use href="#i-truck"/></svg></div></article>
       </div>
     </div>
   </section>

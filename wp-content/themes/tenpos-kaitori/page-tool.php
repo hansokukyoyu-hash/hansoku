@@ -129,7 +129,7 @@ get_template_part(
         <div class="ph" data-label="PHOTO：店頭カウンター"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><use href="#i-doc"/></svg></div>
       </div>
       <div class="method-panel" id="p-visit" role="tabpanel" aria-labelledby="t-visit" hidden>
-        <div><h3>現場・倉庫の工具を<em>まとめて</em>一括査定。</h3><p>廃業・事業縮小・倉庫整理などの大量買取に。スタッフが伺い、その場で査定します。</p><ul><li>出張費・査定料0円</li><li>重量物の搬出も対応</li><li>法人・工務店の大口歓迎</li></ul></div>
+        <div><h3>現場・倉庫の工具を<em>まとめて</em>一括査定。</h3><p>廃業・事業縮小・倉庫整理などの大量買取に。スタッフが伺い、その場で査定します。</p><ul><li>査定料0円</li><li>重量物の搬出も対応</li><li>法人・工務店の大口歓迎</li></ul></div>
         <div class="ph" data-label="PHOTO：出張査定"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><use href="#i-truck"/></svg></div>
       </div>
       <div class="method-panel" id="p-mail" role="tabpanel" aria-labelledby="t-mail" hidden>

@@ -51,7 +51,7 @@ while ( have_posts() ) :
 					<?php the_content(); ?>
 				</div>
 				<aside class="inline-cta">
-					<p>同じような<?php echo esc_html( tk_genre_label( $tk_genre ) ?: '品物' ); ?>をお持ちの方へ<small>動かない・古い品も査定します。出張費・査定料・キャンセル料0円。</small></p>
+					<p>同じような<?php echo esc_html( tk_genre_label( $tk_genre ) ?: '品物' ); ?>をお持ちの方へ<small>動かない・古い品も査定します。査定料・キャンセル料0円。</small></p>
 					<a class="btn" href="<?php echo esc_url( tk_form_url( $tk_genre ) ); ?>"><?php echo tk_icon( 'edit' ); // phpcs:ignore ?>無料査定フォームへ</a>
 				</aside>
 			</article>

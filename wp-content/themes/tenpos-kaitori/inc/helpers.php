@@ -381,7 +381,7 @@ function tk_prepare_column_content( string $html, string $genre ): array {
 
 	if ( $n >= 4 ) {
 		$cta  = sprintf(
-			'<aside class="inline-cta"><p>まずは無料査定で、いくらになるか確認<small>写真を添付して1分で依頼できます。出張費・査定料・キャンセル料0円。</small></p><a class="btn" href="%s">%s無料査定フォームへ</a></aside>',
+			'<aside class="inline-cta"><p>まずは無料査定で、いくらになるか確認<small>写真を添付して1分で依頼できます。査定料・キャンセル料0円。</small></p><a class="btn" href="%s">%s無料査定フォームへ</a></aside>',
 			esc_url( tk_form_url( $genre ) ),
 			tk_icon( 'edit' )
 		);

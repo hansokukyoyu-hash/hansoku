@@ -85,6 +85,6 @@ $c = array_merge( $tk_defaults[ $tk_tone ], tk_dock_config() );
 			<a href="<?php echo esc_url( get_post_type_archive_link( 'faq' ) ); ?>">よくある質問</a>
 			<a href="<?php echo esc_url( tk_page_url( 'contact' ) ); ?>">お問い合わせ</a>
 		</div>
-		<p class="sheet__note" data-stagger>査定料・出張費・キャンセル料 0円｜強引な営業は一切ありません</p>
+		<p class="sheet__note" data-stagger>査定料・キャンセル料 0円｜強引な営業は一切ありません</p>
 	</div>
 </div>
