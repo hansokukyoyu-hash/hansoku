@@ -75,6 +75,28 @@ class DashboardTest extends TestCase
         $this->assertSame(9999, $data['previous']);
     }
 
+    public function test_post_counts_per_platform_in_period(): void
+    {
+        $data = $this->september(Dashboard::MODE_OCCURRED);
+
+        // 9月に投稿されたのは p1(リール)と p2(フィード)。8月の p3 は数えない
+        $this->assertSame(2, $data['posts']);
+        $this->assertSame(2, $data['platforms']['instagram']['posts']);
+        $this->assertEquals(['reel' => 1, 'feed' => 1], $data['platforms']['instagram']['post_formats']);
+        // TikTok は手入力のみなので本数は不明
+        $this->assertNull($data['platforms']['tiktok']['posts']);
+    }
+
+    public function test_dashboard_shows_post_counts(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/?start=2026-09-01&end=2026-09-30')
+            ->assertOk()
+            ->assertSee('期間内の投稿 2 本')
+            ->assertSee('フィード1・リール1・ストーリーズ0')
+            ->assertSee('(手入力のみ)', false);
+    }
+
     public function test_prorate_handles_partial_overlap(): void
     {
         $entry = new ManualEntry(['period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'views' => 3000]);

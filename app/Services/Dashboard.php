@@ -48,7 +48,8 @@ class Dashboard
     /**
      * @return array{
      *   brands: list<array{brand: Brand, total: int, previous: int, accounts: list<array>}>,
-     *   platforms: array<string, array{platform: Platform, total: int, previous: int}>,
+     *   platforms: array<string, array{platform: Platform, total: int, previous: int, posts: ?int, post_formats: array<string, int>}>,
+     *   posts: int,
      *   total: int,
      *   previous: int,
      * }
@@ -64,9 +65,18 @@ class Dashboard
         $current = $this->viewsByAccountAndFormat($accounts, $this->start, $this->end);
         $previous = $this->viewsByAccountAndFormat($accounts, $this->previousStart(), $this->previousEnd());
 
+        $postCounts = $this->postCounts($accounts);
         $platforms = [];
         foreach (Platform::cases() as $platform) {
-            $platforms[$platform->value] = ['platform' => $platform, 'total' => 0, 'previous' => 0];
+            // API連携のアカウントが無いSNS(手入力のみ)は投稿本数が分からないので null
+            $hasApi = $accounts->contains(fn (Account $a) => $a->platform === $platform && $a->isApi());
+            $platforms[$platform->value] = [
+                'platform' => $platform,
+                'total' => 0,
+                'previous' => 0,
+                'posts' => $hasApi ? array_sum($postCounts[$platform->value] ?? []) : null,
+                'post_formats' => $postCounts[$platform->value] ?? [],
+            ];
         }
 
         $brandRows = [];
@@ -101,7 +111,33 @@ class Dashboard
             'platforms' => array_filter($platforms, fn ($p) => $accounts->contains(fn (Account $a) => $a->platform === $p['platform'])),
             'total' => array_sum(array_column($brandRows, 'total')),
             'previous' => array_sum(array_column($brandRows, 'previous')),
+            'posts' => array_sum(array_map('array_sum', $postCounts)),
         ];
+    }
+
+    /**
+     * 期間内に投稿された本数(API連携のアカウントのみ。手入力分は投稿日が無いので数えない)
+     *
+     * @param  Collection<int, Account>  $accounts
+     * @return array<string, array<string, int>> platform => [format => 本数]
+     */
+    public function postCounts(Collection $accounts): array
+    {
+        $platformOf = $accounts->mapWithKeys(fn (Account $a) => [$a->id => $a->platform->value]);
+        $result = [];
+
+        Post::query()
+            ->selectRaw('account_id, format, COUNT(*) as posts')
+            ->whereIn('account_id', $platformOf->keys())
+            ->whereBetween('published_at', [$this->start->startOfDay(), $this->end->endOfDay()])
+            ->groupBy('account_id', 'format')
+            ->get()
+            ->each(function ($row) use (&$result, $platformOf) {
+                $platform = $platformOf[$row->account_id];
+                $result[$platform][$row->format] = ($result[$platform][$row->format] ?? 0) + (int) $row->posts;
+            });
+
+        return $result;
     }
 
     /** モード「イ」では手入力アカウントは数えない(期間合計しか無く投稿日が分からないため) */

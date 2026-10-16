@@ -54,6 +54,7 @@
 <p class="small muted">
     {{ $dashboard->start->isoFormat('YYYY/M/D(ddd)') }} 〜 {{ $dashboard->end->isoFormat('YYYY/M/D(ddd)') }}({{ $dashboard->days() }}日間)。
     前期間比は直前の同じ日数({{ $dashboard->previousStart()->isoFormat('M/D') }}〜{{ $dashboard->previousEnd()->isoFormat('M/D') }})と比べています。
+    投稿本数は、API連携のアカウントで投稿日が期間内のものを数えています(手入力のアカウントは含みません)。
     @if ($dashboard->mode === Dashboard::MODE_POSTED)
         モード「イ」は投稿日が期間内の投稿について、最新の累計閲覧数を合計します。手入力のアカウントは含みません。
     @else
@@ -66,12 +67,23 @@
         <div class="label">全体合計</div>
         <div class="value">{{ $num($data['total']) }}</div>
         <div class="change">前期間比 {!! $change($data['total'], $data['previous']) !!}</div>
+        <div class="posts">期間内の投稿 {{ number_format($data['posts']) }} 本</div>
     </div>
     @foreach ($data['platforms'] as $p)
         <div class="kpi">
             <div class="label">{{ $p['platform']->label() }}({{ $p['platform']->metricLabel() }})</div>
             <div class="value">{{ $num($p['total']) }}</div>
             <div class="change">前期間比 {!! $change($p['total'], $p['previous']) !!}</div>
+            <div class="posts">
+                @if ($p['posts'] === null)
+                    投稿 —<span class="muted">(手入力のみ)</span>
+                @else
+                    投稿 {{ number_format($p['posts']) }} 本
+                    @if (count($p['platform']->formats()) > 1 && $p['posts'] > 0)
+                        <span class="muted">({{ collect($p['platform']->formats())->map(fn ($label, $key) => $label.($p['post_formats'][$key] ?? 0))->implode('・') }})</span>
+                    @endif
+                @endif
+            </div>
         </div>
     @endforeach
 </div>
