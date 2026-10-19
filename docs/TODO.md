@@ -50,7 +50,7 @@
 調査結果（本番・閲覧のみ）：WP 標準サイトマップ `/kaitori/wp-sitemap.xml` は生成済み。ルートの robots.txt（他サイトと共用）に kaitori のサイトマップ記載なし。meta description・OGP なし。AI クローラー（GPTBot・ClaudeBot・PerplexityBot 等）はアクセス可。
 - [ ] （ユーザー）既定の投稿「Hello world!」・固定ページ「Sample Page」を削除（公開中・サイトマップに載っている）
 - [ ] （ユーザー）掲載内容の精査（45 項目。`docs/FACTCHECK.md`、記入用 Excel を 2026-10-05 に渡し済み）→ 結果を受けてテーマ修正
-- [ ] **至急**：本文未作成のコラムの予約投稿（最短 10/8 9:00 公開）と、公開中の未完成コラム tool-hanashi-01 の扱い（ユーザー）
+- [ ] **至急**：本文のないコラムが公開中（2026-10-19 確認：rinou-03・tool-hanashi-01・tool-hanashi-02）。予約投稿は 10/22 rinou-04・10/29 tool-hanashi-03・11/5 rinou-05・11/12 tool-hanashi-04。本文を書くか下書きに戻す（ユーザー）
 - [ ] （ユーザー）電話番号・古物商許可番号を正式値に
 - [ ] （テーマ）サイトマップ整理：ユーザー（/author/kaitori/ はログイン名が見える）・未分類カテゴリ・用語の個別 URL（301）・FAQ の個別 URL を除外
 - [ ] （テーマ）meta description・OGP・X カード

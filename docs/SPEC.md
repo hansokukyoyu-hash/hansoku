@@ -261,6 +261,8 @@ docs/                SETUP.md（導入手順）、CF7 ひな形、privacy-policy
 
 | 事象 | 原因 | 対策（実装済み） |
 |---|---|---|
+| カスタマイザーで URL を含む値を公開すると「何かうまくいかなかったようです」 | サーバーの WAF が保存の通信を遮断（2026-10-05） | WAF を一時オフにして保存→戻す。スプレッドシート連携は 1.5.0 で URL 入力欄を廃止 |
+| 海外から `/wp-json/wp/v2/` が 403 | お名前.com の REST API 国外アクセス制限（作業環境は海外 IP） | 本番の投稿を REST で扱わない（必要時はユーザー了承のうえ `?rest_route=`）。独自 API `/wp-json/tk/v1/` は影響なし |
 | `/column/series/{slug}/` が 404・別記事へリダイレクト | タクソノミー登録が CPT より後 | タクソノミーを先に登録 |
 | フォーム上部に空の枠 | CF7 CSS 非読込で hidden-fields の fieldset が見えた | `.wpcf7 .hidden-fields-container{display:none}` |
 | `/privacy-policy/` が 404 | WP 標準の下書きを「作成済み」と誤判定 | 初期設定で下書きを検出・ひな形作成。フッターは公開済みのみリンク |
