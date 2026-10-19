@@ -3,6 +3,9 @@
 このリポジトリは **本番稼働中の WordPress サイト**（https://tenpos.online/kaitori/）のオリジナルテーマを管理している。
 **過去に、仕様を確認せず場当たり的に対応してサイトが壊れたことがある。** 以下のルールを必ず守る。
 
+> **ほかの指示との関係**：ユーザー全体の CLAUDE.md（`~/.claude/CLAUDE.md` 等）や、別のリポジトリの CLAUDE.md と内容が食い違う場合、**このリポジトリ（tenpos.online/kaitori）の作業ではこのファイルを優先する**。食い違いに気づいたら、作業を始める前にユーザーに確認する。
+> このサイトのテーマの正は本リポジトリ（`hansokukyoyu-hash/hansoku` の main）だけ。別の場所にあるテーマのコピーを編集・アップロードしない。
+
 ## 作業開始時に必ず読む
 0. `docs/HANDOVER.md` … 引き継ぎ書（全体像・環境準備・外部連携・現状。初めてのアカウント／担当者はここから）
 1. `docs/SPEC.md` … サイト仕様（URL、slug、フィールド名、設定キー、壊しやすい箇所、既知の注意点）
@@ -44,6 +47,7 @@
 `git archive --format=zip --prefix=tenpos-kaitori/ <コミットID>:wp-content/themes/tenpos-kaitori -o tenpos-kaitori-<版>.zip`
 
 ## 作業環境の注意
+- ※ 以下のプロキシ・SPKI 関連はクラウド環境（claude.ai/code）向け。PC アプリでの作業は `docs/HANDOVER.md`「PC アプリで作業する場合」を参照。
 - この環境の外向き通信はプロキシ経由。`tenpos.online`・`wordpress.org`・`downloads.wordpress.org` はネットワーク許可が必要（許可されていなければユーザーに環境設定の変更を依頼）。
 - Playwright で本番を開く場合は `tools/check-pages.mjs` を使う（作業環境のプロキシを自動で使い、プロキシの CA を SPKI 指定で信頼する。TLS 検証は無効化しない）。
 - ローカル再現環境のサーバーは `php -S localhost:8090 -t <作業dir>/www router.php`（setup.sh が起動）。止めるときは `pgrep -f "php -S localhost:8090"` で PID を確認して `kill`。
