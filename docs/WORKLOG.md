@@ -146,6 +146,8 @@
 - 引き継ぎ書 `docs/HANDOVER.md` を作成（別アカウントでの管理に備えて）。CLAUDE.md の必読リストに追加、REST の例外を終了扱いに
 - 本文のないコラムが公開中と判明（rinou-03・tool-hanashi-01・tool-hanashi-02）→ ユーザーに連絡（TODO）
 - 作業ブランチを main にマージ（PR #1、ユーザーがマージ）。以後は main が正
+- PC アプリ（Windows）へ移行。本番の閲覧確認（check-live.sh・check-pages.mjs）は異常なし。HANDOVER の共通ルールの参照先を `Documents\CLAUDE.md` に修正（PR #4）。koizumijunji-ux を Collaborator に追加（ユーザー実施）
+- `.gitattributes` で `*.sh` を LF に固定（Windows の clone で CRLF になり、WSL の bash で動かないため）。テーマは変更なし
 
 ## 次回
 → `docs/TODO.md`
