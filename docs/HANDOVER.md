@@ -34,8 +34,8 @@
 | 項目 | 内容 |
 |---|---|
 | GitHub | `hansokukyoyu-hash/hansoku` |
-| 作業ブランチ | **`claude/wordpress-site-setup-4fni0c`**（ここまでの作業はすべてこのブランチにある） |
-| main | 初回コミットのみ（作業内容は未マージ）。引き継ぎ後は、このブランチを main にマージしてから作業を始めることを推奨 |
+| 正のブランチ | **`main`**（2026-10-19 に [PR #1](https://github.com/hansokukyoyu-hash/hansoku/pull/1) で、それまでの作業ブランチ `claude/wordpress-site-setup-4fni0c` をマージ済み） |
+| 作業ブランチ | セッションごとに作られるブランチで作業し、main へはプルリクエストで取り込む（ユーザーがマージ）。旧ブランチ `claude/wordpress-site-setup-4fni0c` はリリース履歴の参照元なので削除しない |
 | 構成 | `wp-content/themes/tenpos-kaitori/`（本番テーマ・正）／`docs/`（仕様・履歴・TODO・精査リスト）／`tools/`（ローカル再現環境・確認スクリプト）／`mock/`（デザインの元の静的モック） |
 | 版の管理 | タグは使わず、コミット ID で管理（`docs/WORKLOG.md` のリリース履歴）。戻すときはその ID から ZIP を作る（CLAUDE.md） |
 
@@ -46,7 +46,7 @@
    - `wordpress.org`・`downloads.wordpress.org`（ローカル再現環境の WordPress・プラグインの取得）
    - `raw.githubusercontent.com`（WP-CLI の取得）
    - npm のレジストリ（`tools/` の Playwright のインストール）
-3. **最初のセッション**で、作業ブランチ（または main にマージしたもの）を開き、次のように依頼する：
+3. **最初のセッション**で main を開き、次のように依頼する：
    > 「docs/HANDOVER.md と CLAUDE.md を読んで、ローカル再現環境を作り、本番の閲覧確認（tools/check-live.sh と tools/check-pages.mjs）を実行して、現状を報告してください」
 4. ローカル再現環境の作り方・合格基準は `CLAUDE.md`「変更の手順」4 のとおり（WP 7.1.2＋ACF＋CF7＋SQLite、`php -S localhost:8090`）
 5. 通常の作業では、環境変数・秘密情報は**不要**
