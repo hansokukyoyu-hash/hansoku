@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 本番と同じ構成（WordPress 7.1.2 + ACF + CF7、SQLite）をローカルに再現し、テーマを有効化する。
+# 本番と同じ構成（WordPress 7.1.3 + ACF + CF7、SQLite）をローカルに再現し、テーマを有効化する。
 # 使い方: tools/local-wp/setup.sh [作業ディレクトリ] [ポート]
 #   既定: 作業ディレクトリ = $TMPDIR/tk-wp（リポジトリの外）、ポート = 8090
 # 何度実行しても安全（既にあるものは再利用）。削除は行わない。
@@ -8,7 +8,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 BASE="${1:-${TMPDIR:-/tmp}/tk-wp}"
 PORT="${2:-8090}"
-WPVER="7.1.2"
+WPVER="7.1.3"
 W="$BASE/www/kaitori"
 URL="http://localhost:$PORT/kaitori"
 CLI="$BASE/wp-cli.phar"

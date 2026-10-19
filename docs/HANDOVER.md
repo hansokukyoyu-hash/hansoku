@@ -13,13 +13,13 @@
 | 目的 | 農機具（農家・離農・遺品整理）と工具（職人・工務店）の買取の問い合わせ獲得 |
 | 主なページ | トップ（2 つの入口）／農機具 LP `/agricultural-equipment/`／工具 LP `/tool/`／買取実績 `/results/`／コラム（連載）`/column/`／用語集 `/glossary/`／FAQ `/faq/`／お問い合わせ `/contact/`／プライバシーポリシー・利用規約・対応エリア |
 | 成果（目標） | フォーム送信完了（GA4 キーイベント `contact`） |
-| 仕組み | WordPress 7.1.2 ＋ オリジナルクラシックテーマ `tenpos-kaitori`（本リポジトリで管理） |
+| 仕組み | WordPress 7.1.3 ＋ オリジナルクラシックテーマ `tenpos-kaitori`（本リポジトリで管理） |
 
 ## 2. 本番環境
 | 項目 | 内容 |
 |---|---|
 | サーバー | お名前.com レンタルサーバー（nginx キャッシュ・WAF あり）。PHP 8.4 |
-| WordPress | 7.1.2、`/kaitori/` サブディレクトリ、パーマリンクは投稿名 |
+| WordPress | 7.1.3、`/kaitori/` サブディレクトリ、パーマリンクは投稿名 |
 | テーマ | `tenpos-kaitori` **1.5.3**（2026-10-15 反映・確認済み） |
 | プラグイン | Advanced Custom Fields（無料版）、Contact Form 7、Flamingo、WP Mail SMTP、Site Kit by Google |
 | 本番の変更方法 | **ユーザーが管理画面から行う**（テーマ ZIP のアップロード、カスタマイザー、投稿、CF7）。Claude は閲覧（GET）で確認するだけ |
@@ -48,7 +48,7 @@
    - npm のレジストリ（`tools/` の Playwright のインストール）
 3. **最初のセッション**で main を開き、次のように依頼する：
    > 「docs/HANDOVER.md と CLAUDE.md を読んで、ローカル再現環境を作り、本番の閲覧確認（tools/check-live.sh と tools/check-pages.mjs）を実行して、現状を報告してください」
-4. ローカル再現環境の作り方・合格基準は `CLAUDE.md`「変更の手順」4 のとおり（WP 7.1.2＋ACF＋CF7＋SQLite、`php -S localhost:8090`）
+4. ローカル再現環境の作り方・合格基準は `CLAUDE.md`「変更の手順」4 のとおり（WP 7.1.3＋ACF＋CF7＋SQLite、`php -S localhost:8090`）
 5. 通常の作業では、環境変数・秘密情報は**不要**
 
 ### PC アプリ（Claude Code デスクトップ）で作業する場合
