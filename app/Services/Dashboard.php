@@ -48,8 +48,9 @@ class Dashboard
     /**
      * @return array{
      *   brands: list<array{brand: Brand, total: int, previous: int, accounts: list<array>}>,
-     *   platforms: array<string, array{platform: Platform, total: int, previous: int, posts: ?int, post_formats: array<string, int>}>,
+     *   platforms: array<string, array{platform: Platform, total: int, previous: int, posts: ?int, post_formats: array<string, int>, ads: int}>,
      *   posts: int,
+     *   ads: int,
      *   total: int,
      *   previous: int,
      * }
@@ -76,6 +77,7 @@ class Dashboard
                 'previous' => 0,
                 'posts' => $hasApi ? array_sum($postCounts[$platform->value] ?? []) : null,
                 'post_formats' => $postCounts[$platform->value] ?? [],
+                'ads' => 0,
             ];
         }
 
@@ -96,6 +98,7 @@ class Dashboard
 
                 $platforms[$account->platform->value]['total'] += $total ?? 0;
                 $platforms[$account->platform->value]['previous'] += $prev ?? 0;
+                $platforms[$account->platform->value]['ads'] += $this->countable($account) ? ($formats['ad'] ?? 0) : 0;
             }
 
             $brandRows[] = [
@@ -112,6 +115,7 @@ class Dashboard
             'total' => array_sum(array_column($brandRows, 'total')),
             'previous' => array_sum(array_column($brandRows, 'previous')),
             'posts' => array_sum(array_map('array_sum', $postCounts)),
+            'ads' => array_sum(array_column($platforms, 'ads')),
         ];
     }
 
@@ -138,6 +142,21 @@ class Dashboard
             });
 
         return $result;
+    }
+
+    /**
+     * 内訳に出すフォーマット。モード「ア」はアカウント全体の日別値の内訳(広告・通常動画などを含む)、
+     * モード「イ」は投稿の種類。
+     *
+     * @return array<string, string>
+     */
+    public function breakdownFormats(Account $account): array
+    {
+        if ($this->mode === self::MODE_OCCURRED && $account->isApi()) {
+            return $account->platform->viewFormats();
+        }
+
+        return $account->platform->formats();
     }
 
     /** モード「イ」では手入力アカウントは数えない(期間合計しか無く投稿日が分からないため) */

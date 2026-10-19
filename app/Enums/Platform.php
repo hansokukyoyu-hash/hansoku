@@ -40,9 +40,32 @@ enum Platform: string
         };
     }
 
+    /**
+     * 「期間中に発生した閲覧数」(モード ア)の内訳。
+     * Instagram・Facebook・YouTube はアカウント全体の日別値を取るので、投稿の種類とは別に
+     * 広告や通常動画も含む(Business Suite / YouTube Studio と同じ範囲)。
+     *
+     * @return array<string, string>
+     */
+    public function viewFormats(): array
+    {
+        return match ($this) {
+            self::Instagram => ['feed' => 'フィード', 'reel' => 'リール', 'story' => 'ストーリーズ', 'ad' => '広告'],
+            self::Facebook => ['organic' => 'オーガニック', 'ad' => '広告'],
+            self::YouTube => ['short' => 'ショート', 'video' => '通常動画', 'live' => 'ライブ'],
+            default => $this->formats(),
+        };
+    }
+
+    /** 広告の閲覧数を内訳に持つか */
+    public function hasAdViews(): bool
+    {
+        return array_key_exists('ad', $this->viewFormats());
+    }
+
     public function formatLabel(string $format): string
     {
-        return $this->formats()[$format] ?? $format;
+        return $this->viewFormats()[$format] ?? $this->formats()[$format] ?? $format;
     }
 
     /** API連携に対応しているか(TikTokは審査前、Xは有料APIを使わないため手入力のみ) */

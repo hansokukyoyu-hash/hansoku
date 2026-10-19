@@ -97,6 +97,19 @@ class DashboardTest extends TestCase
             ->assertSee('(手入力のみ)', false);
     }
 
+    public function test_ad_views_are_shown_separately(): void
+    {
+        DailyMetric::create(['account_id' => $this->instagram->id, 'date' => '2026-09-20', 'format' => 'ad', 'views' => 250]);
+
+        $data = $this->september(Dashboard::MODE_OCCURRED);
+        $this->assertSame(250, $data['platforms']['instagram']['ads']);
+        $this->assertSame(890, $data['platforms']['instagram']['total']); // 広告も合計に含む
+
+        $this->actingAs(User::factory()->create())
+            ->get('/?start=2026-09-01&end=2026-09-30')
+            ->assertSee('うち広告 250 回');
+    }
+
     public function test_prorate_handles_partial_overlap(): void
     {
         $entry = new ManualEntry(['period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'views' => 3000]);

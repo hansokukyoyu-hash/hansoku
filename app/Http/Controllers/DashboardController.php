@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $data = $dashboard->build($request->user());
         $filename = sprintf('sns-views_%s_%s_%s.csv', $dashboard->start->format('Ymd'), $dashboard->end->format('Ymd'), $dashboard->mode);
 
-        return response()->streamDownload(function () use ($data) {
+        return response()->streamDownload(function () use ($data, $dashboard) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // Excelで文字化けしないようBOMを付ける
             fputcsv($out, ['ブランド', 'SNS', 'アカウント', '取得方法', 'フォーマット', '閲覧数・再生回数', '前期間']);
@@ -41,7 +41,7 @@ class DashboardController extends Controller
                     $account = $row['account'];
                     $method = $account->isApi() ? 'API' : '手入力';
                     fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, '合計', $row['total'] ?? '', $row['previous'] ?? '']);
-                    foreach ($account->platform->formats() as $key => $label) {
+                    foreach ($dashboard->breakdownFormats($account) as $key => $label) {
                         fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, $label, $row['formats'][$key] ?? 0, '']);
                     }
                 }

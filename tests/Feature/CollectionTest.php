@@ -8,6 +8,7 @@ use App\Models\DailyMetric;
 use App\Models\Post;
 use App\Models\PostSnapshot;
 use App\Services\CollectionRunner;
+use App\Services\Collectors\FacebookCollector;
 use App\Services\MetricsRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -73,22 +74,105 @@ class CollectionTest extends TestCase
             'graph.facebook.com/v23.0/m1/insights*' => Http::response(['data' => [['name' => 'views', 'values' => [['value' => 1200]]]]]),
             'graph.facebook.com/v23.0/m2/insights*' => Http::response(['data' => [['name' => 'views', 'total_value' => ['value' => 300]]]]),
             'graph.facebook.com/v23.0/s1/insights*' => Http::response(['data' => [['name' => 'views', 'values' => [['value' => 80]]]]]),
+            // アカウント全体の日別閲覧数(Business Suite と同じ指標)
+            'graph.facebook.com/v23.0/17841/insights*' => Http::response(['data' => [[
+                'name' => 'views', 'period' => 'day',
+                'total_value' => ['value' => 1000, 'breakdowns' => [[
+                    'dimension_keys' => ['media_product_type'],
+                    'results' => [
+                        ['dimension_values' => ['REEL'], 'value' => 600],
+                        ['dimension_values' => ['STORY'], 'value' => 100],
+                        ['dimension_values' => ['POST'], 'value' => 150],
+                        ['dimension_values' => ['CAROUSEL_CONTAINER'], 'value' => 50],
+                        ['dimension_values' => ['AD'], 'value' => 100],
+                    ],
+                ]]],
+            ]]]),
         ]);
 
         $runner = app(CollectionRunner::class);
-        $this->assertSame('success', $runner->run($account, CollectionRunner::JOB_DAILY)->status);
+        $daily = $runner->run($account, CollectionRunner::JOB_DAILY);
+        $this->assertSame('success', $daily->status, (string) $daily->message);
         $this->assertSame('success', $runner->run($account, CollectionRunner::JOB_STORIES)->status);
 
         // 投稿期間外(m3)は取らない
         $this->assertSame(['m1' => 'reel', 'm2' => 'feed', 's1' => 'story'], Post::orderBy('external_id')->pluck('format', 'external_id')->all());
         // UTC 2026-10-04 23:30 は日本時間 10/5 08:30
         $this->assertSame('2026-10-05 08:30', Post::where('external_id', 's1')->first()->published_at->format('Y-m-d H:i'));
-        $this->assertSame(1200, $this->daily($account, '2026-10-05', 'reel'));
-        $this->assertSame(80, $this->daily($account, '2026-10-05', 'story'));
+        // 日別値はアカウント全体の値。ストーリーズ収集で投稿差分に上書きされない
+        $this->assertSame(600, $this->daily($account, '2026-10-05', 'reel'));
+        $this->assertSame(100, $this->daily($account, '2026-10-05', 'story'));
+        $this->assertSame(200, $this->daily($account, '2026-10-05', 'feed'));
+        $this->assertSame(100, $this->daily($account, '2026-10-05', 'ad'));
+        // 初回は30日さかのぼる
+        $this->assertSame(600, $this->daily($account, '2026-09-05', 'reel'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '17841/insights') && str_contains($request->url(), 'breakdown=media_product_type') && str_contains($request->url(), 'metric_type=total_value'));
         $account->refresh();
         $this->assertNotNull($account->daily_synced_at);
         $this->assertNotNull($account->stories_synced_at);
         Http::assertSent(fn ($request) => str_contains($request->url(), 'access_token=token-17841'));
+    }
+
+    public function test_instagram_falls_back_to_post_differences_when_account_views_fail(): void
+    {
+        $account = Account::factory()->platform(Platform::Instagram)->connected('17842')->create();
+
+        Http::fake([
+            'graph.facebook.com/v23.0/17842/media*' => Http::response(['data' => [
+                ['id' => 'm9', 'media_product_type' => 'REELS', 'timestamp' => '2026-10-04T10:00:00+0000'],
+            ]]),
+            'graph.facebook.com/v23.0/m9/insights*' => Http::response(['data' => [['name' => 'views', 'values' => [['value' => 500]]]]]),
+            'graph.facebook.com/v23.0/17842/insights*' => Http::response(['error' => ['message' => '(#100) metric not supported', 'code' => 100]], 400),
+        ]);
+
+        $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+
+        $this->assertSame('success', $log->status);
+        $this->assertStringContainsString('投稿の差分で代用', (string) $log->message);
+        $this->assertSame(500, $this->daily($account, '2026-10-05', 'reel'));
+    }
+
+    public function test_facebook_stores_page_views_with_ads_breakdown(): void
+    {
+        $account = Account::factory()->platform(Platform::Facebook)->connected('page2')->create();
+        // 以前の投稿差分による日次値は、初回のさかのぼり取得で入れ替わる
+        DailyMetric::create(['account_id' => $account->id, 'date' => '2026-10-04', 'format' => 'post', 'views' => 9]);
+
+        Http::fake([
+            'graph.facebook.com/v23.0/page2/posts*' => Http::response(['data' => []]),
+            'graph.facebook.com/v23.0/page2/insights*' => function ($request) {
+                // end_time は太平洋時間の翌0時(10/4 分 = 2026-10-05T07:00:00+0000)
+                if (str_contains($request->url(), 'breakdown=is_from_ads')) {
+                    return Http::response(['data' => [['name' => 'page_media_view', 'period' => 'day', 'values' => [
+                        ['value' => ['true' => 300, 'false' => 700], 'end_time' => '2026-10-05T07:00:00+0000'],
+                    ]]]]);
+                }
+
+                return Http::response(['data' => [['name' => 'page_media_view', 'period' => 'day', 'values' => [
+                    ['value' => 1000, 'end_time' => '2026-10-05T07:00:00+0000'],
+                    ['value' => 400, 'end_time' => '2026-10-04T07:00:00+0000'],
+                ]]]]);
+            },
+        ]);
+
+        $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+
+        $this->assertSame('success', $log->status, (string) $log->message);
+        $this->assertSame(700, $this->daily($account, '2026-10-04', 'organic'));
+        $this->assertSame(300, $this->daily($account, '2026-10-04', 'ad'));
+        $this->assertSame(400, $this->daily($account, '2026-10-03', 'organic'));
+        $this->assertSame(0, $this->daily($account, '2026-10-03', 'ad'));
+        $this->assertNull($this->daily($account, '2026-10-04', 'post'));
+    }
+
+    public function test_facebook_ad_values_as_separate_rows(): void
+    {
+        $ads = FacebookCollector::dailyAdValues(['data' => [
+            ['name' => 'page_media_view', 'breakdowns' => ['is_from_ads' => 'true'], 'values' => [['value' => 40, 'end_time' => '2026-10-05T07:00:00+0000']]],
+            ['name' => 'page_media_view', 'breakdowns' => ['is_from_ads' => 'false'], 'values' => [['value' => 60, 'end_time' => '2026-10-05T07:00:00+0000']]],
+        ]]);
+
+        $this->assertSame(['2026-10-04' => 40], $ads);
     }
 
     public function test_expired_token_marks_account_for_reconnect(): void
@@ -132,6 +216,9 @@ class CollectionTest extends TestCase
 
         $this->assertSame('success', $log->status, (string) $log->message);
         $this->assertSame(220, $this->daily($account, '2026-10-04', 'short'));
+        // 通常動画も YouTube Studio と同じく合計に含めるため別に保存する
+        $this->assertSame(999, $this->daily($account, '2026-10-04', 'video'));
+        $this->assertSame(0, $this->daily($account, '2026-10-04', 'live'));
         $this->assertSame(9000, Post::where('external_id', 'v1')->value('views'));
         $this->assertSame('fresh', $account->fresh()->credential('access_token'));
         $this->assertSame(0, $this->daily($account, '2026-10-02', 'short'));

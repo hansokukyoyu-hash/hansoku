@@ -33,10 +33,75 @@ class InstagramCollector extends Collector
             $count += $this->record($graph, $account, $item, $format) ? 1 : 0;
         }
 
-        $this->recorder->rebuildDaily($account, now()->subDay());
-        $this->recorder->rebuildDaily($account, now());
+        return "投稿 {$count} 件を更新、".$this->collectAccountViews($graph, $account);
+    }
 
-        return "投稿 {$count} 件を更新";
+    /**
+     * アカウント全体の日別閲覧数(Business Suite の「閲覧数」と同じ指標)を、
+     * フィード・リール・ストーリーズ・広告の内訳つきで保存する。
+     * total_value は指定範囲の合計を返すので、1日ずつ問い合わせる。
+     */
+    private function collectAccountViews(GraphClient $graph, Account $account): string
+    {
+        [$start, $end, $backfill] = $this->accountLevelRange($account, 'ad', 30);
+
+        try {
+            $byDate = [];
+            for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+                $insights = $graph->get($account->external_id.'/insights', [
+                    'metric' => 'views',
+                    'period' => 'day',
+                    'metric_type' => 'total_value',
+                    'breakdown' => 'media_product_type',
+                    'since' => $day->getTimestamp(),
+                    'until' => $day->addDay()->getTimestamp(),
+                ], $this->token($account));
+
+                $byDate[$day->toDateString()] = self::splitViews($insights);
+            }
+        } catch (SnsApiException $e) {
+            if ($e->needsReconnect) {
+                throw $e;
+            }
+
+            // アカウント全体の値が取れないときは、投稿ごとの累計の差分で代用する
+            if ($backfill) {
+                $this->recorder->rebuildDaily($account, now()->subDay());
+                $this->recorder->rebuildDaily($account, now());
+            }
+
+            return '日別閲覧数は投稿の差分で代用(アカウント全体の取得に失敗: '.$e->getMessage().')';
+        }
+
+        $this->saveAccountLevel($account, $byDate, $backfill);
+        $days = count($byDate);
+
+        return "日別閲覧数 {$days} 日分を更新";
+    }
+
+    /** @return array<string, int> feed / reel / story / ad => 閲覧数 */
+    public static function splitViews(array $insights): array
+    {
+        $views = ['feed' => 0, 'reel' => 0, 'story' => 0, 'ad' => 0];
+        $row = collect($insights['data'] ?? [])->firstWhere('name', 'views') ?? [];
+        $total = (int) ($row['total_value']['value'] ?? 0);
+        $results = $row['total_value']['breakdowns'][0]['results'] ?? [];
+
+        foreach ($results as $result) {
+            $type = strtoupper((string) ($result['dimension_values'][0] ?? ''));
+            $format = match ($type) {
+                'REEL', 'REELS' => 'reel',
+                'STORY' => 'story',
+                'AD' => 'ad',
+                default => 'feed', // POST / CAROUSEL_CONTAINER / FEED など
+            };
+            $views[$format] += (int) ($result['value'] ?? 0);
+        }
+
+        // 内訳が返らない・合計に届かない分はフィードに含める
+        $views['feed'] += max(0, $total - array_sum($views));
+
+        return $views;
     }
 
     public function collectStories(Account $account): string
@@ -49,7 +114,9 @@ class InstagramCollector extends Collector
             $count += $this->record($graph, $account, $item, 'story') ? 1 : 0;
         }
 
-        $this->recorder->rebuildDaily($account, now());
+        if (! $this->usesAccountLevel($account, 'ad')) {
+            $this->recorder->rebuildDaily($account, now());
+        }
 
         return "ストーリーズ {$count} 件を更新";
     }

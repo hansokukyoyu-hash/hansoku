@@ -58,7 +58,7 @@
     @if ($dashboard->mode === Dashboard::MODE_POSTED)
         モード「イ」は投稿日が期間内の投稿について、最新の累計閲覧数を合計します。手入力のアカウントは含みません。
     @else
-        手入力分は、入力した期間と集計期間が重なる日数で按分しています。
+        Instagram・Facebook はアカウント全体の閲覧数(広告を含む。Business Suite と同じ指標)、YouTube はショート・通常動画・ライブを含む全体の再生回数です。手入力分は、入力した期間と集計期間が重なる日数で按分しています。
     @endif
 </p>
 
@@ -67,6 +67,9 @@
         <div class="label">全体合計</div>
         <div class="value">{{ $num($data['total']) }}</div>
         <div class="change">前期間比 {!! $change($data['total'], $data['previous']) !!}</div>
+        @if ($dashboard->mode === Dashboard::MODE_OCCURRED && $data['ads'] > 0)
+            <div class="change muted">うち広告 {{ number_format($data['ads']) }} 回</div>
+        @endif
         <div class="posts">期間内の投稿 {{ number_format($data['posts']) }} 本</div>
     </div>
     @foreach ($data['platforms'] as $p)
@@ -74,6 +77,9 @@
             <div class="label">{{ $p['platform']->label() }}({{ $p['platform']->metricLabel() }})</div>
             <div class="value">{{ $num($p['total']) }}</div>
             <div class="change">前期間比 {!! $change($p['total'], $p['previous']) !!}</div>
+            @if ($dashboard->mode === Dashboard::MODE_OCCURRED && $p['platform']->hasAdViews())
+                <div class="change muted">うち広告 {{ number_format($p['ads']) }} 回</div>
+            @endif
             <div class="posts">
                 @if ($p['posts'] === null)
                     投稿 —<span class="muted">(手入力のみ)</span>
@@ -124,7 +130,7 @@
                             <div class="breakdown">
                                 <table>
                                     <tr><th>フォーマット</th><th class="num">{{ $account->platform->metricLabel() }}</th></tr>
-                                    @foreach ($account->platform->formats() as $key => $label)
+                                    @foreach ($dashboard->breakdownFormats($account) as $key => $label)
                                         <tr>
                                             <td>{{ $label }}</td>
                                             <td class="num">{{ $dashboard->countable($account) ? number_format($row['formats'][$key] ?? 0) : '—' }}</td>

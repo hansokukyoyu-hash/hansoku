@@ -37,8 +37,9 @@ class YouTubeCollector extends Collector
 
         // 初回は過去1年分をさかのぼって取る。2回目以降は直近7日分を毎回取り直す
         // (YouTube側の集計は2〜3日遅れて確定するため)
-        // (最古の日次値が1年前に届いていなければ、まださかのぼり取得をしていないとみなす)
-        $oldest = $account->dailyMetrics()->where('format', 'short')->min('date');
+        // 通常動画・ライブも YouTube Studio と同じく合計に含め、内訳で分ける。
+        // (通常動画の日次値が1年前に届いていなければ、まださかのぼり取得をしていないとみなす)
+        $oldest = $account->dailyMetrics()->where('format', 'video')->min('date');
         $backfill = $oldest === null || $oldest > now()->subDays(300)->toDateString();
         $start = now()->subDays($backfill ? 365 : 7)->startOfDay();
         $daily = $this->report($token, [
@@ -48,16 +49,19 @@ class YouTubeCollector extends Collector
             'dimensions' => 'day,creatorContentType',
         ]);
         $byDay = [];
-        $types = [];
         foreach ($daily['rows'] ?? [] as [$day, $type, $views]) {
-            $types[$type] = true;
-            if (strtoupper((string) $type) === self::SHORTS) {
-                $byDay[$day] = (int) $views;
-            }
+            $format = match (strtoupper((string) $type)) {
+                self::SHORTS => 'short',
+                'LIVE_STREAM' => 'live',
+                default => 'video', // VIDEO_ON_DEMAND / STORY / UNSPECIFIED
+            };
+            $byDay[$day][$format] = ($byDay[$day][$format] ?? 0) + (int) $views;
         }
-        // ショートの再生が無い日は行が返らないので 0 を入れる
+        // 再生が無い日・種類は行が返らないので 0 を入れる
         for ($day = $start->copy(); $day->lte(now()); $day->addDay()) {
-            $this->recorder->putDaily($account, $day, 'short', $byDay[$day->toDateString()] ?? 0);
+            foreach (['short', 'video', 'live'] as $format) {
+                $this->recorder->putDaily($account, $day, $format, $byDay[$day->toDateString()][$format] ?? 0);
+            }
         }
 
         // ショートごとの累計再生回数(上位200本)。失敗しても日次の合計は保存済みなので処理は続ける
@@ -71,9 +75,7 @@ class YouTubeCollector extends Collector
             return sprintf('日次 %d 日分を更新(ショート別の取得に失敗: %s)', count($byDay), $e->getMessage());
         }
 
-        $note = $byDay === [] ? sprintf('(期間内にショートの再生データなし。返ってきた種類: %s)', $types === [] ? 'なし' : implode(', ', array_keys($types))) : '';
-
-        return sprintf('日次 %d 日分、ショート %d 本を更新%s', count($byDay), $count, $note);
+        return sprintf('日次 %d 日分、ショート %d 本を更新', count($byDay), $count);
     }
 
     /**
