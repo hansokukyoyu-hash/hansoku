@@ -64,6 +64,21 @@
 
 > 用語の注意：CLAUDE.md の「作業環境の注意」のうち、プロキシ・SPKI・`/root/.ccr` に関する記述はクラウド環境向け。PC では該当しない。
 
+### PC 全体の CLAUDE.md（`C:\Users\j-koizumi\.claude\CLAUDE.md`）との関係（2026-10-19 確認）
+PC 全体の CLAUDE.md には、同じ会社の別サイト（tenpos-diy・包丁館・noodle-machines・portal・pressurecooker・food-machinery 等）の作業記録と「WordPress 共通 開発ルール」が入っている。**このサイト（kaitori）の記載はない**。別サイトでのやり方を、このサイトに持ち込まないこと。
+
+| 別サイトでのやり方（PC 全体の CLAUDE.md） | このサイト（kaitori）でのやり方 |
+|---|---|
+| App Password・ログイン済み Chrome の nonce で、Claude が REST から本番の投稿・ページを作成・編集。WAF を一時 OFF にして投稿 | **Claude は本番を変更しない（閲覧のみ）**。投稿・ページの変更はユーザーが管理画面で行う。※ PC は日本の IP なので REST が通ってしまう＝誤操作に特に注意 |
+| テーマファイルエディターでの直接編集、mu-plugin の追加 | **テーマはリポジトリ → ZIP → ユーザーがアップロード**だけ。直接編集は次の ZIP で消える |
+| テーマのソース・記録は `C:\Users\j-koizumi\Documents\<案件>\` と `作業記録.md` | **ソースは GitHub リポジトリ（main）だけ**。記録は `docs/WORKLOG.md`・`docs/TODO.md`。Documents にテーマのコピーや 作業記録.md を作らない |
+| ZIP は Python zipfile（ディレクトリエントリ付き） | `git archive`（CLAUDE.md の手順）。リリース履歴のコミット ID から作る |
+| GA4 は GTM／`generate_lead` を自前で送る | **Site Kit の `contact` イベントのみ**（キーイベント登録済み）。GTM・GA タグ・`generate_lead` を追加しない（二重計測になる） |
+| 問い合わせ → Flamingo → REST（App Password）→ Apps Script が毎分取得 | テーマ独自の `tk/v1/sheets`（トークン認証）を Apps Script が 5 分ごとに取得（SPEC.md）。方式を置き換えない |
+| 共通 mu-plugin `tenpos-hardening.php`（脆弱性診断の修正計画・未実施。対象 9 サイトに kaitori は含まれない） | 導入するならリポジトリで管理し、ローカル検証のうえユーザーが反映 |
+
+**そのまま活かしてよいもの**：「WordPress 共通 開発ルール」の実装計画ゲート・1 変更 1 テスト・エビデンス・事前バックアップ・承認制（このサイトの CLAUDE.md と矛盾しない）／ルート robots.txt は共有なので編集しない（同じ方針）／GA4 の「AIを含むチャネル」、IndexNow・llms.txt などの GEO の実例（このサイトで行うときはテーマで実装し、通常の手順で反映）
+
 ## 5. 作業ルール（要点。正は CLAUDE.md）
 - 本番に直接変更を加えない。本番への反映はユーザーが行う。パスワードを受け取らない・求めない
 - 本番でフォーム送信など副作用のある操作をしない（テスト送信はユーザーに依頼）
