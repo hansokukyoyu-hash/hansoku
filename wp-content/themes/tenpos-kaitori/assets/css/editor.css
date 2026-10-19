@@ -1,0 +1,7 @@
+/* ブロックエディタ用（本文の見え方を公開画面に近づける） */
+body { font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif; line-height: 2; }
+h2 { font-size: 24px; font-weight: 900; padding-bottom: 10px; border-bottom: 2px solid #15171a; }
+h2 + p { padding: 12px 16px; background: #f1ece0; border-radius: 10px; font-weight: 700; }
+h3 { font-size: 18px; font-weight: 900; padding-left: 12px; border-left: 4px solid #2f6b3a; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ddd; padding: 10px 12px; }
