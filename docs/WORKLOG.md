@@ -148,6 +148,7 @@
 - 作業ブランチを main にマージ（PR #1、ユーザーがマージ）。以後は main が正
 - PC アプリ（Windows）へ移行。本番の閲覧確認（check-live.sh・check-pages.mjs）は異常なし。HANDOVER の共通ルールの参照先を `Documents\CLAUDE.md` に修正（PR #4）。koizumijunji-ux を Collaborator に追加（ユーザー実施）
 - `.gitattributes` で `*.sh` を LF に固定（Windows の clone で CRLF になり、WSL の bash で動かないため）。テーマは変更なし
+- PC（WSL Ubuntu・PHP 8.5.4）でローカル再現環境を構築。wp-cron の自動更新で WordPress が 7.1.3 になり、debug.log に更新の記録が出た → `tools/local-wp/setup.sh` を修正：wp-config.php に `AUTOMATIC_UPDATER_DISABLED`（既存にも追記・二重に入らない）、版が `WPVER` と違えば本体だけ入れ直す、`wp core verify-checksums` で公式ファイルと照合。検証：7.1.2 に戻る・2 回目は入れ直さない・check-pages「OK」・debug.log 0 行・管理画面の ACF 入力欄あり。注意：PHP 8.5 では WP-CLI 自体が Deprecated を出す（setup.sh の最後で debug.log を空にするので確認には影響しない）。本番の PHP は 8.4、WordPress の版は管理画面で要確認
 
 ## 次回
 → `docs/TODO.md`
