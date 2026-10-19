@@ -25,7 +25,7 @@
 1. SPEC.md で影響範囲を確認（テンプレート、JS が依存する `data-*` 属性、目次タブとセクションの順番など）
 2. 変更を実装
 3. 構文チェック：`for f in $(find wp-content/themes/tenpos-kaitori -name '*.php'); do php -l "$f"; done`
-4. **ローカル再現環境で検証**（本番と同じ WordPress 7.1.2 ＋ ACF ＋ CF7、DB は SQLite、WP_DEBUG 有効）
+4. **ローカル再現環境で検証**（本番と同じ WordPress 7.1.3 ＋ ACF ＋ CF7、DB は SQLite、WP_DEBUG 有効）
    ```bash
    (cd tools && npm i)                                   # 初回のみ（Playwright）
    TMPDIR=<スクラッチパッド> tools/local-wp/setup.sh       # 環境構築・起動（何度実行しても安全。debug.log を空にする）

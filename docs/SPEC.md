@@ -10,7 +10,7 @@
 | 項目 | 値 |
 |---|---|
 | URL | https://tenpos.online/kaitori/ （WordPress はサブディレクトリ `/kaitori/` にインストール） |
-| WordPress | 7.1.2 |
+| WordPress | 7.1.3 |
 | PHP | 8.4 |
 | サーバー | お名前.com レンタルサーバー（Web: 160.251.148.241 / `www1111.onamae.ne.jp`） |
 | テーマ | `tenpos-kaitori`（本リポジトリ `wp-content/themes/tenpos-kaitori/`）バージョン 1.5.3（本番も 1.5.3） |

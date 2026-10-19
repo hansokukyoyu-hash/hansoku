@@ -1,6 +1,6 @@
 # TENPOS 買取テーマ 導入手順
 
-対象環境：WordPress 7.1.2 / PHP 8.4（`https://tenpos.online/kaitori/`）
+対象環境：WordPress 7.1.3 / PHP 8.4（`https://tenpos.online/kaitori/`）
 
 ## 1. 事前に入れるプラグイン
 

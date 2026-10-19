@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 本番と同じ構成（WordPress 7.1.2 + ACF + CF7、SQLite）をローカルに再現し、テーマを有効化する。
+# 本番と同じ構成（WordPress 7.1.3 + ACF + CF7、SQLite）をローカルに再現し、テーマを有効化する。
 # 使い方: tools/local-wp/setup.sh [作業ディレクトリ] [ポート]
 #   既定: 作業ディレクトリ = $TMPDIR/tk-wp（リポジトリの外）、ポート = 8090
 # 何度実行しても安全（既にあるものは再利用）。削除は行わない。
@@ -8,7 +8,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 BASE="${1:-${TMPDIR:-/tmp}/tk-wp}"
 PORT="${2:-8090}"
-WPVER="7.1.2"
+WPVER="7.1.3"
 W="$BASE/www/kaitori"
 URL="http://localhost:$PORT/kaitori"
 CLI="$BASE/wp-cli.phar"
@@ -16,7 +16,14 @@ WP="php $CLI --allow-root --path=$W"
 
 mkdir -p "$W"
 [ -f "$CLI" ] || curl -sS -o "$CLI" https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-[ -f "$W/wp-includes/version.php" ] || $WP core download --version="$WPVER" --locale=ja
+if [ ! -f "$W/wp-includes/version.php" ]; then
+  $WP core download --version="$WPVER" --locale=ja
+elif [ "$($WP core version 2>/dev/null)" != "$WPVER" ]; then
+  # 自動更新などで版が変わっていたら本体だけ入れ直す（wp-content・wp-config.php は残る）
+  $WP core download --version="$WPVER" --locale=ja --force
+fi
+# 本体が wordpress.org の公式ファイルと一致するか確認（不一致なら止まる）
+$WP core verify-checksums --version="$WPVER" --locale=ja
 
 for p in sqlite-database-integration advanced-custom-fields contact-form-7; do
   if [ ! -d "$W/wp-content/plugins/$p" ]; then
@@ -33,6 +40,8 @@ if [ ! -f "$W/wp-config.php" ]; then
   sed -i "s/database_name_here/wp/;s/username_here/wp/;s/password_here/wp/" "$W/wp-config.php"
   sed -i "s/define( 'WP_DEBUG', false );/define( 'WP_DEBUG', true ); define( 'WP_DEBUG_LOG', true ); define( 'WP_DEBUG_DISPLAY', false ); define( 'DB_FILE', 'local.sqlite' );/" "$W/wp-config.php"
 fi
+# 自動更新を止める（本番と同じ版に保つため。既存の wp-config.php にもなければ追記）
+grep -q "AUTOMATIC_UPDATER_DISABLED" "$W/wp-config.php" || sed -i "s#^/\* That's all, stop editing!#define( 'AUTOMATIC_UPDATER_DISABLED', true );\n&#" "$W/wp-config.php"
 
 ln -sfn "$REPO/wp-content/themes/tenpos-kaitori" "$W/wp-content/themes/tenpos-kaitori"
 # ローカル専用：メール送信を成功扱いにする（送信完了の表示・計測を検証するため。本番には入れない）
