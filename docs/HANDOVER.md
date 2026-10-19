@@ -51,6 +51,19 @@
 4. ローカル再現環境の作り方・合格基準は `CLAUDE.md`「変更の手順」4 のとおり（WP 7.1.2＋ACF＋CF7＋SQLite、`php -S localhost:8090`）
 5. 通常の作業では、環境変数・秘密情報は**不要**
 
+### PC アプリ（Claude Code デスクトップ）で作業する場合
+引き継ぎ先は PC アプリで使う予定（2026-10-19）。クラウド環境との違い：
+| 項目 | PC アプリ（ローカル） | クラウド環境（これまで） |
+|---|---|---|
+| リポジトリ | PC に `git clone https://github.com/hansokukyoyu-hash/hansoku.git` して、そのフォルダを開く。作業前に `git pull` | 自動で取得 |
+| CLAUDE.md | このリポジトリの CLAUDE.md に加え、**PC のユーザー全体の CLAUDE.md**（Windows: `C:\Users\<ユーザー名>\.claude\CLAUDE.md`）も同時に読み込まれる。**食い違う指示（本番に直接反映する、main に直接プッシュする等）がないか事前に確認**。食い違う場合はこのリポジトリの CLAUDE.md を優先（CLAUDE.md 冒頭に明記） | リポジトリの CLAUDE.md のみ |
+| ネットワーク | プロキシなし。日本の IP なので、本番の REST 国外アクセス制限には当たらない（ただし本番を REST で変更しないルールは同じ） | プロキシ経由・海外 IP |
+| ローカル再現環境 | `tools/local-wp/setup.sh` は bash 用（`setsid`・`unzip`・`curl` を使う）。Windows では **WSL（Ubuntu）** で実行する。必要なもの：PHP 8.x（`pdo_sqlite`・`mbstring`・`zip` 等）、curl、unzip、Node.js | すべて導入済み |
+| ページ確認 | `cd tools && npm i && npx playwright install chromium`（初回のみ）→ `node tools/check-pages.mjs ...` | Chromium 導入済み（`playwright install` は不要） |
+| 本番の閲覧確認 | `tools/check-live.sh`（bash・curl。WSL か Git Bash） | そのまま |
+
+> 用語の注意：CLAUDE.md の「作業環境の注意」のうち、プロキシ・SPKI・`/root/.ccr` に関する記述はクラウド環境向け。PC では該当しない。
+
 ## 5. 作業ルール（要点。正は CLAUDE.md）
 - 本番に直接変更を加えない。本番への反映はユーザーが行う。パスワードを受け取らない・求めない
 - 本番でフォーム送信など副作用のある操作をしない（テスト送信はユーザーに依頼）

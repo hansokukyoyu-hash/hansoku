@@ -47,6 +47,7 @@
 `git archive --format=zip --prefix=tenpos-kaitori/ <コミットID>:wp-content/themes/tenpos-kaitori -o tenpos-kaitori-<版>.zip`
 
 ## 作業環境の注意
+- ※ 以下のプロキシ・SPKI 関連はクラウド環境（claude.ai/code）向け。PC アプリでの作業は `docs/HANDOVER.md`「PC アプリで作業する場合」を参照。
 - この環境の外向き通信はプロキシ経由。`tenpos.online`・`wordpress.org`・`downloads.wordpress.org` はネットワーク許可が必要（許可されていなければユーザーに環境設定の変更を依頼）。
 - Playwright で本番を開く場合は `tools/check-pages.mjs` を使う（作業環境のプロキシを自動で使い、プロキシの CA を SPKI 指定で信頼する。TLS 検証は無効化しない）。
 - ローカル再現環境のサーバーは `php -S localhost:8090 -t <作業dir>/www router.php`（setup.sh が起動）。止めるときは `pgrep -f "php -S localhost:8090"` で PID を確認して `kill`。
