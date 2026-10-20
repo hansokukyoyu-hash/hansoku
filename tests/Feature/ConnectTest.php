@@ -96,6 +96,11 @@ class ConnectTest extends TestCase
         $this->assertTrue($account->isConnected());
     }
 
+    public function test_wrong_method_shows_friendly_page(): void
+    {
+        $this->actingAs(User::factory()->admin()->create())->post('/')->assertStatus(405)->assertSee('ページを表示できませんでした');
+    }
+
     public function test_manual_platform_cannot_connect(): void
     {
         $account = Account::factory()->platform(Platform::X)->manual()->create();

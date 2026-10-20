@@ -68,7 +68,7 @@ class AccountController extends Controller
             $messages[] = ($log->status === 'success' ? '成功' : '失敗').': '.$log->message;
         }
 
-        return back()->with('status', "「{$account->name}」".implode(' / ', $messages));
+        return redirect()->route('admin.accounts.index')->with('status', "「{$account->name}」".implode(' / ', $messages));
     }
 
     private function validated(Request $request): array
