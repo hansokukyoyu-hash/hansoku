@@ -1,0 +1,3 @@
+# TikTok などの審査担当者が見られるよう、このフォルダ(プライバシーポリシー・利用規約)だけはベーシック認証を掛けない
+Require all granted
+DirectoryIndex privacy.html

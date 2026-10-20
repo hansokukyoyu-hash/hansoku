@@ -68,10 +68,10 @@ enum Platform: string
         return $this->viewFormats()[$format] ?? $this->formats()[$format] ?? $format;
     }
 
-    /** API連携に対応しているか(TikTokは審査前、Xは有料APIを使わないため手入力のみ) */
+    /** API連携に対応しているか(Xは有料APIを使わないため手入力のみ) */
     public function supportsApi(): bool
     {
-        return in_array($this, [self::Instagram, self::Facebook, self::YouTube, self::Threads], true);
+        return $this !== self::X;
     }
 
     /** ストーリーズのように数時間おきに収集が必要か */

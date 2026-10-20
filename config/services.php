@@ -55,4 +55,9 @@ return [
         'app_secret' => env('THREADS_APP_SECRET'),
     ],
 
+    'tiktok' => [
+        'client_key' => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+    ],
+
 ];

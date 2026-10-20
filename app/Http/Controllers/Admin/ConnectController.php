@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Services\OAuth\GoogleOAuth;
 use App\Services\OAuth\MetaOAuth;
 use App\Services\OAuth\ThreadsOAuth;
+use App\Services\OAuth\TikTokOAuth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ use Illuminate\View\View;
  * 戻り先URL(各SNSの開発者画面に登録する):
  *   Meta(Instagram・Facebook): {APP_URL}/connect/meta/callback
  *   Threads:                    {APP_URL}/connect/threads/callback
+ *   TikTok:                     {APP_URL}/connect/tiktok/callback
  *   YouTube:                    {APP_URL}/connect/google/callback
  */
 class ConnectController extends Controller
@@ -33,6 +35,7 @@ class ConnectController extends Controller
         return redirect()->away(match ($account->platform) {
             Platform::Instagram, Platform::Facebook => app(MetaOAuth::class)->authorizeUrl(route('connect.meta.callback'), $state),
             Platform::Threads => app(ThreadsOAuth::class)->authorizeUrl(route('connect.threads.callback'), $state),
+            Platform::TikTok => app(TikTokOAuth::class)->authorizeUrl(route('connect.tiktok.callback'), $state),
             Platform::YouTube => app(GoogleOAuth::class)->authorizeUrl(route('connect.google.callback'), $state),
         });
     }
@@ -102,6 +105,21 @@ class ConnectController extends Controller
         ]);
 
         return $this->connected($request, $account, '@'.$result['username']);
+    }
+
+    public function tiktokCallback(Request $request, TikTokOAuth $oauth): RedirectResponse
+    {
+        $account = $this->pendingAccount($request);
+
+        try {
+            $result = $oauth->exchange((string) $request->query('code'), route('connect.tiktok.callback'));
+        } catch (SnsApiException $e) {
+            return $this->failed($account, $e);
+        }
+
+        $account->fill(['external_id' => $result['open_id'], 'credentials' => $result['credentials']]);
+
+        return $this->connected($request, $account, (string) ($result['display_name'] ?? 'TikTok'));
     }
 
     public function googleCallback(Request $request, GoogleOAuth $oauth): RedirectResponse

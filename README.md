@@ -10,8 +10,8 @@
 | --- | --- |
 | ダッシュボード | 全体・SNS別のKPIカード、ブランド × SNS の比較表、前期間比、フォーマット別・投稿別の内訳(▶で展開) |
 | 集計モード | ア. 期間中に発生した閲覧数 / イ. 期間中に投稿したものの閲覧数 を切り替え |
-| 自動収集 | Instagram(プロ)・Facebookページ・YouTubeショート・Threads を API で取得。ストーリーズは2時間おき、その他は1日1回 |
-| 手入力 | Facebook個人プロフィール・Instagram個人・TikTok・X は、各アプリで見た数値を期間ごとに入力 |
+| 自動収集 | Instagram(プロ)・Facebookページ・YouTube・Threads・TikTok を API で取得。ストーリーズは2時間おき、その他は1日1回 |
+| 手入力 | Facebook個人プロフィール・Instagram個人・X は、各アプリで見た数値を期間ごとに入力 |
 | ログイン | Googleアカウント。管理者が登録したアカウントだけが入れる |
 | 権限 | 管理者(全操作)/ 運用担当(内訳・投稿別・手入力。担当ブランドに限定可)/ 閲覧者(合計のみ) |
 | その他 | CSV出力、収集ログ、noindex(meta タグ + `X-Robots-Tag`) |
@@ -24,9 +24,10 @@
 | Facebookページ | Facebook Graph API | 投稿・ストーリーズの閲覧数(指標名は `SNS_FACEBOOK_POST_VIEWS_METRIC` で変更可) |
 | YouTube | YouTube Analytics API + Data API | ショートの再生回数(日次)と、ショートごとの累計 |
 | Threads | Threads API | 投稿の閲覧数(views) |
-| TikTok / X / 個人アカウント | 手入力 | 期間ごとの合計 |
+| TikTok | TikTok Login Kit + Display API | 動画ごとの累計再生回数(view_count) |
+| X / 個人アカウント | 手入力 | 期間ごとの合計 |
 
-Instagram・Facebook・Threads は API が投稿ごとの累計しか返さないため、毎日の累計を保存し、前日との差を日次の閲覧数としています。システムが初めて見た古い投稿は、過去分が一度に乗らないよう初日を 0 として扱います。
+Threads・TikTok は API が投稿ごとの累計しか返さないため、毎日の累計を保存し、前日との差を日次の閲覧数としています。システムが初めて見た古い投稿は、過去分が一度に乗らないよう初日を 0 として扱います。
 
 ---
 
@@ -42,6 +43,7 @@ Instagram・Facebook・Threads は API が投稿ごとの累計しか返さな�
 | Google(YouTube連携) | `https://tenpos.online/report/connect/google/callback` |
 | Meta(Instagram・Facebook) | `https://tenpos.online/report/connect/meta/callback` |
 | Threads | `https://tenpos.online/report/connect/threads/callback` |
+| TikTok | `https://tenpos.online/report/connect/tiktok/callback` |
 
 **Google Cloud**(ログインと YouTube で同じクライアントを使います)
 
@@ -66,6 +68,14 @@ Instagram・Facebook・Threads は API が投稿ごとの累計しか返さな�
 3. 上の Threads のURLを「コールバックURL」に登録します。アンインストール・削除のコールバックURLにも `https://tenpos.online/report/` 配下のURLを入れます。
 4. 「アプリの役割」→「Threadsテスター」に連携する各 Threads アカウントを追加し、各アカウントの Threads アプリ(設定 → アカウント → ウェブサイトのアクセス許可 → 招待)で承認します。
 5. Threads アプリIDとシークレットを控えます。
+
+**TikTok**
+
+1. TikTok for Developers でアプリを作り、プロダクト **Login Kit** と **Display API** を追加します。スコープは `user.info.basic` と `video.list` を使います。
+2. プラットフォームに「Web」を選び、上の TikTok のURLを「Redirect URI」に登録します。
+3. プライバシーポリシーと利用規約のURLには `https://tenpos.online/report/legal/privacy.html` と `https://tenpos.online/report/legal/terms.html` を入れます(このフォルダだけはベーシック認証なしで見られます)。
+4. 審査前は「Sandbox」で、連携する TikTok アカウントを「Target users」に追加すれば試せます。全アカウントを連携するには審査(App review)を受けます。
+5. Client key と Client secret を `.env` の `TIKTOK_CLIENT_KEY` `TIKTOK_CLIENT_SECRET` に入れます。
 
 > アプリIDやシークレットは、チャットや設計書に書かず、サーバーの `.env` にだけ書いてください。
 

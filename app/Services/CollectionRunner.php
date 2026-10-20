@@ -10,6 +10,7 @@ use App\Services\Collectors\Collector;
 use App\Services\Collectors\FacebookCollector;
 use App\Services\Collectors\InstagramCollector;
 use App\Services\Collectors\ThreadsCollector;
+use App\Services\Collectors\TikTokCollector;
 use App\Services\Collectors\YouTubeCollector;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -157,6 +158,7 @@ class CollectionRunner
             Platform::Facebook => app(FacebookCollector::class),
             Platform::YouTube => app(YouTubeCollector::class),
             Platform::Threads => app(ThreadsCollector::class),
+            Platform::TikTok => app(TikTokCollector::class),
             default => throw new SnsApiException($platform->label().' は手入力のみ対応です。'),
         };
     }

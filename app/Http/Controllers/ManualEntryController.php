@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/** Facebook個人・TikTok・X など、APIで取らないアカウントの閲覧数を入力する */
+/** Facebook個人・X など、APIで取らないアカウントの閲覧数を入力する */
 class ManualEntryController extends Controller
 {
     public function index(Request $request): View

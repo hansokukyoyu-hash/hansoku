@@ -276,6 +276,47 @@ class CollectionTest extends TestCase
         $this->assertSame(42, $this->daily($account, '2026-10-05', 'post'));
     }
 
+    public function test_tiktok_refreshes_token_and_pages_through_videos(): void
+    {
+        $account = Account::factory()->platform(Platform::TikTok)->connected('open1')->create([
+            'credentials' => ['access_token' => 'old', 'refresh_token' => 'r1', 'expires_at' => now()->subHour()->toIso8601String()],
+        ]);
+
+        Http::fake([
+            'open.tiktokapis.com/v2/oauth/token/' => Http::response(['access_token' => 'new', 'refresh_token' => 'r2', 'expires_in' => 86400, 'open_id' => 'open1']),
+            'open.tiktokapis.com/v2/video/list/*' => Http::sequence()
+                ->push(['data' => ['videos' => [
+                    ['id' => '111', 'title' => '新メニュー', 'create_time' => 1759572000, 'share_url' => 'https://www.tiktok.com/@a/video/111', 'view_count' => 300],
+                ], 'cursor' => 1759572000000, 'has_more' => true], 'error' => ['code' => 'ok']])
+                ->push(['data' => ['videos' => [
+                    ['id' => '222', 'video_description' => '説明', 'create_time' => 1759485600, 'view_count' => 50],
+                ], 'cursor' => 0, 'has_more' => false], 'error' => ['code' => 'ok']]),
+        ]);
+
+        $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+
+        $this->assertSame('success', $log->status, (string) $log->message);
+        $this->assertSame('動画 2 件を更新', $log->message);
+        $this->assertSame('new', $account->fresh()->credential('access_token'));
+        $this->assertSame('r2', $account->fresh()->credential('refresh_token'));
+        $this->assertEqualsCanonicalizing(['111', '222'], Post::pluck('external_id')->all());
+        $this->assertSame('説明', Post::where('external_id', '222')->value('caption'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'video/list') && ($request->data()['cursor'] ?? null) === 1759572000000);
+    }
+
+    public function test_tiktok_invalid_token_needs_reconnect(): void
+    {
+        $account = Account::factory()->platform(Platform::TikTok)->connected('open1')->create([
+            'credentials' => ['access_token' => 'at', 'refresh_token' => 'r1', 'expires_at' => now()->addHours(5)->toIso8601String()],
+        ]);
+        Http::fake(['open.tiktokapis.com/v2/video/list/*' => Http::response(['data' => [], 'error' => ['code' => 'access_token_invalid', 'message' => 'The access token is invalid']], 401)]);
+
+        $log = app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+
+        $this->assertSame('failed', $log->status);
+        $this->assertStringStartsWith('【再連携が必要】', $account->fresh()->last_error);
+    }
+
     public function test_due_tasks_prioritise_stories_and_respect_limit(): void
     {
         $ig = Account::factory()->platform(Platform::Instagram)->connected('1')->create(['daily_synced_at' => now()->subDay()]);

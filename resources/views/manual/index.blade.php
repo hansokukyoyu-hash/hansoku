@@ -2,7 +2,7 @@
 @section('title', '手入力')
 @section('content')
 <h1>手入力</h1>
-<p class="muted">APIで取得しないアカウント(Facebook個人プロフィール、TikTok、Xなど)の閲覧数を、各アプリで確認した数値で入力します。</p>
+<p class="muted">APIで取得しないアカウント(Facebook個人プロフィール、Xなど)の閲覧数を、各アプリで確認した数値で入力します。</p>
 <div class="table-wrap">
 <table>
     <thead><tr><th>ブランド</th><th>SNS</th><th>アカウント</th><th>入力済みの期間</th><th></th></tr></thead>

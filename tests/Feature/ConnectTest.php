@@ -72,6 +72,30 @@ class ConnectTest extends TestCase
         $this->assertSame('rt', $account->credential('refresh_token'));
     }
 
+    public function test_tiktok_connect_flow(): void
+    {
+        config(['services.tiktok.client_key' => 'ck', 'services.tiktok.client_secret' => 'cs']);
+        $admin = User::factory()->admin()->create();
+        $account = Account::factory()->platform(Platform::TikTok)->create();
+
+        $this->actingAs($admin)->get("/admin/accounts/{$account->id}/connect")
+            ->assertRedirectContains('https://www.tiktok.com/v2/auth/authorize/?client_key=ck');
+        $state = session('connect.state');
+
+        Http::fake([
+            'open.tiktokapis.com/v2/oauth/token/' => Http::response(['access_token' => 'at', 'refresh_token' => 'rt', 'expires_in' => 86400, 'open_id' => 'open1']),
+            'open.tiktokapis.com/v2/user/info/*' => Http::response(['data' => ['user' => ['open_id' => 'open1', 'display_name' => 'ブランドTT']], 'error' => ['code' => 'ok']]),
+        ]);
+
+        $this->get("/connect/tiktok/callback?code=abc&state={$state}")
+            ->assertRedirect(route('admin.accounts.index'))
+            ->assertSessionHas('status', fn ($s) => str_contains($s, 'ブランドTT'));
+        $account->refresh();
+        $this->assertSame('open1', $account->external_id);
+        $this->assertSame('rt', $account->credential('refresh_token'));
+        $this->assertTrue($account->isConnected());
+    }
+
     public function test_manual_platform_cannot_connect(): void
     {
         $account = Account::factory()->platform(Platform::X)->manual()->create();
@@ -84,7 +108,7 @@ class ConnectTest extends TestCase
         $account = Account::factory()->create();
 
         $this->actingAs(User::factory()->admin()->create())->post('/admin/accounts', [
-            'brand_id' => $account->brand_id, 'platform' => 'tiktok', 'name' => 'TT', 'input_method' => 'api',
+            'brand_id' => $account->brand_id, 'platform' => 'x', 'name' => 'TT', 'input_method' => 'api',
         ])->assertRedirect();
 
         $this->assertSame(Account::METHOD_MANUAL, Account::where('name', 'TT')->value('input_method'));

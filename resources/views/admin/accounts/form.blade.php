@@ -33,8 +33,9 @@
         <button class="btn primary">保存</button>
     </form>
     <ul class="small muted">
-        <li>API(自動取得)が使えるのは、Instagramプロアカウント・Facebookページ・YouTube・Threads です。</li>
-        <li>Facebook個人プロフィール、Instagram個人アカウント、TikTok、X は「手入力」を選んでください(APIを選んでも手入力として保存されます)。</li>
+        <li>API(自動取得)が使えるのは、Instagramプロアカウント・Facebookページ・YouTube・Threads・TikTok です。</li>
+        <li>手入力からAPIに切り替えた場合、連携した日以降の期間は手入力しないでください(手入力分も合計に含まれるため二重に数えられます)。</li>
+        <li>Facebook個人プロフィール、Instagram個人アカウント、X は「手入力」を選んでください(APIを選んでも手入力として保存されます)。</li>
     </ul>
 </div>
 @endsection

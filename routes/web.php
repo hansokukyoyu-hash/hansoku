@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/connect/meta/choose', [Admin\ConnectController::class, 'metaChoose'])->name('connect.meta.choose');
         Route::post('/connect/meta/choose', [Admin\ConnectController::class, 'metaSave'])->name('connect.meta.save');
         Route::get('/connect/threads/callback', [Admin\ConnectController::class, 'threadsCallback'])->name('connect.threads.callback');
+        Route::get('/connect/tiktok/callback', [Admin\ConnectController::class, 'tiktokCallback'])->name('connect.tiktok.callback');
         Route::get('/connect/google/callback', [Admin\ConnectController::class, 'googleCallback'])->name('connect.google.callback');
     });
 });
