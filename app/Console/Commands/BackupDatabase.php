@@ -21,7 +21,8 @@ class BackupDatabase extends Command
             return self::FAILURE;
         }
 
-        $dir = config('sns.backup_dir');
+        // 設定キャッシュが古く backup_dir が無いときも既定の場所を使う
+        $dir = config('sns.backup_dir') ?: dirname(base_path()).'/sns-report-backup';
         File::ensureDirectoryExists($dir, 0700);
 
         // パスワードをコマンドラインに出さないよう、本人だけが読める一時ファイルで mysqldump に渡す
