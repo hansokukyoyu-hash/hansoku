@@ -60,10 +60,11 @@ class CollectionRunner
         // 前の回で打ち切られたもの(終わりまで進まなかったもの)は、しばらく後回しにする
         $tasks = array_values(array_filter($tasks, fn ($t) => ! Cache::has(self::attemptKey($t[0], $t[1]))));
 
-        // ストーリーズは消える前に取りたいので先に処理する
-        usort($tasks, fn ($x, $y) => ($x[1] === self::JOB_STORIES ? 0 : 1) <=> ($y[1] === self::JOB_STORIES ? 0 : 1));
+        // ストーリーズ(消える前に取りたいので先)と日次を、それぞれ最大 $limit 件ずつ。
+        // 件数を共有すると、アカウントが多いときにストーリーズだけで枠が埋まり日次が進まなくなる
+        $pick = fn (string $job) => array_slice(array_values(array_filter($tasks, fn ($t) => $t[1] === $job)), 0, $limit);
 
-        return array_slice($tasks, 0, $limit);
+        return [...$pick(self::JOB_STORIES), ...$pick(self::JOB_DAILY)];
     }
 
     public function run(Account $account, string $job): SyncLog

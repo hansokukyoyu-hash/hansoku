@@ -291,7 +291,8 @@ class CollectionTest extends TestCase
             [[$ig->id, 'stories'], [$yt->id, 'daily'], [$ig->id, 'daily']],
             array_map(fn ($t) => [$t[0]->id, $t[1]], $tasks),
         );
-        $this->assertCount(2, app(CollectionRunner::class)->dueTasks(2));
+        // ストーリーズと日次は別々に件数を数える
+        $this->assertSame(['stories', 'daily'], array_column(app(CollectionRunner::class)->dueTasks(1), 1));
 
         // 日次の収集開始時刻より前は日次を選ばない
         $this->travelTo(CarbonImmutable::parse('2026-10-05 02:00'));
