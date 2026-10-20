@@ -107,13 +107,13 @@ vi .env   # DB、ADMIN_EMAILS、Google・Meta・Threads のIDとシークレッ�
 chmod -R 775 storage bootstrap/cache
 php artisan migrate --force
 php artisan config:cache
-php artisan route:cache
 php artisan view:cache
 ```
 
 - `DB_*` には、お名前.com のコントロールパネルで作った MySQL の情報を入れます。
 - `ADMIN_EMAILS` に入れた Google アカウントは、初回ログイン時に管理者として自動登録されます。
 - `.env` を書き換えたら、もう一度 `php artisan config:cache` を実行します。
+- `php artisan route:cache` は使わないでください。このサーバーではダッシュボード(`/report/`)が「405」エラーになることがありました。
 
 ### 4. ベーシック認証
 
