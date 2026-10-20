@@ -126,7 +126,7 @@ htpasswd -c ~/sns-report-htpasswd/.htpasswd チームで使うID
 30 4 * * * mysqldump -h DBホスト -u DBユーザー -p'DBパスワード' DB名 | gzip > ~/sns-report-backup/db_$(date +\%Y\%m\%d).sql.gz && find ~/sns-report-backup -name 'db_*.sql.gz' -mtime +14 -delete
 ```
 
-1回の実行で処理する件数は `SNS_ACCOUNTS_PER_RUN`(既定3件)で調整できます。cron の実行時間の上限に当たるようなら値を小さくしてください。途中で打ち切られても、次の回が続きから処理します。
+1回の実行で処理する件数は `SNS_ACCOUNTS_PER_RUN`(既定3件)で調整できます。1回の実行が3分を超えたら残りは次の回に回します。サーバー側で処理が強制終了された場合は、収集ログに「打ち切られました」と記録し、そのアカウントは2時間後に再試行して、その間は他のアカウントを先に進めます。
 
 ### 6. 初期設定(画面)
 

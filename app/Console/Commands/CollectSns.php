@@ -16,15 +16,31 @@ class CollectSns extends Command
     public function handle(CollectionRunner $runner): int
     {
         // 前の回がまだ動いていれば何もしない
-        $lock = Cache::lock('sns:collect', 30 * 60);
+        // (強制終了で解放されなかったときも 15 分で切れる)
+        $lock = Cache::lock('sns:collect', 15 * 60);
         if (! $lock->get()) {
             $this->info('前回の収集が実行中のためスキップしました。');
 
             return self::SUCCESS;
         }
+        register_shutdown_function(function () use ($lock) {
+            try {
+                $lock->release();
+            } catch (\Throwable) {
+            }
+        });
+
+        $runner->closeStaleLogs();
+        $startedAt = microtime(true);
 
         try {
             foreach ($this->tasks($runner) as [$account, $job]) {
+                // 次の cron(5分後)と重ならないよう、時間が経っていたら残りは次の回に回す
+                if (! $this->option('account') && microtime(true) - $startedAt > 3 * 60) {
+                    $this->line('時間が掛かっているため、残りは次の回に処理します。');
+                    break;
+                }
+
                 $log = $runner->run($account, $job);
                 $this->line(sprintf('[%s] #%d %s %s: %s', $log->status, $account->id, $account->name, $job, $log->message));
             }

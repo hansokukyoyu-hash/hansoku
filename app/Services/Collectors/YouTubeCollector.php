@@ -25,6 +25,11 @@ class YouTubeCollector extends Collector
 
     private const SHORTS = 'SHORTS';
 
+    /** 1回の収集でショートかどうかを確かめる(ページを開く)動画の数 */
+    private const SHORT_CHECKS_PER_RUN = 40;
+
+    private int $shortChecks = 0;
+
     public function __construct(MetricsRecorder $recorder, private readonly GoogleOAuth $oauth)
     {
         parent::__construct($recorder);
@@ -85,6 +90,7 @@ class YouTubeCollector extends Collector
      */
     private function collectVideos(Account $account, string $token, string $today): int
     {
+        $this->shortChecks = 0;
         $videos = $this->report($token, [
             'startDate' => '2020-09-01', // ショート開始以降
             'endDate' => $today,
@@ -143,7 +149,18 @@ class YouTubeCollector extends Collector
             return false;
         }
 
-        return Cache::remember("youtube:is-short:{$id}", now()->addDays(30), function () use ($id) {
+        $key = "youtube:is-short:{$id}";
+        if (Cache::has($key)) {
+            return (bool) Cache::get($key);
+        }
+
+        // 1回の収集で開くページ数を抑える(実行時間の上限対策)。残りは翌日以降に判定する
+        if ($this->shortChecks >= self::SHORT_CHECKS_PER_RUN) {
+            return false;
+        }
+        $this->shortChecks++;
+
+        return Cache::remember($key, now()->addDays(30), function () use ($id) {
             try {
                 $response = Http::withoutRedirecting()->timeout(10)->get("https://www.youtube.com/shorts/{$id}");
             } catch (Throwable) {

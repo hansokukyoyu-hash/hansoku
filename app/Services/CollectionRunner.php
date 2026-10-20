@@ -12,6 +12,7 @@ use App\Services\Collectors\InstagramCollector;
 use App\Services\Collectors\ThreadsCollector;
 use App\Services\Collectors\YouTubeCollector;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -24,6 +25,12 @@ class CollectionRunner
     public const JOB_DAILY = 'daily';
 
     public const JOB_STORIES = 'stories';
+
+    /** 途中で打ち切られた処理を、この時間(分)は選ばずに他のアカウントを先に進める */
+    public const RETRY_AFTER_MINUTES = 120;
+
+    /** 「実行中」のまま、この時間(分)を過ぎた記録は打ち切られたものとみなす */
+    public const STALE_MINUTES = 30;
 
     /** @return list<array{0: Account, 1: string}> */
     public function dueTasks(int $limit): array
@@ -50,6 +57,9 @@ class CollectionRunner
                 $tasks[] = [$a, self::JOB_STORIES];
             });
 
+        // 前の回で打ち切られたもの(終わりまで進まなかったもの)は、しばらく後回しにする
+        $tasks = array_values(array_filter($tasks, fn ($t) => ! Cache::has(self::attemptKey($t[0], $t[1]))));
+
         // ストーリーズは消える前に取りたいので先に処理する
         usort($tasks, fn ($x, $y) => ($x[1] === self::JOB_STORIES ? 0 : 1) <=> ($y[1] === self::JOB_STORIES ? 0 : 1));
 
@@ -64,6 +74,17 @@ class CollectionRunner
             'status' => 'running',
             'started_at' => now(),
         ]);
+
+        // 実行時間やメモリの上限で強制終了されると catch に来ないため、目印を残しておき、
+        // 次の回はこのアカウントを後回しにする(正常に終われば消す)
+        Cache::put(self::attemptKey($account, $job), true, now()->addMinutes(self::RETRY_AFTER_MINUTES));
+        register_shutdown_function(function () use ($log) {
+            try {
+                $this->markInterrupted($log, error_get_last()['message'] ?? null);
+            } catch (Throwable) {
+                // 終了処理中は DB に繋がらないこともある。その場合は次の回の closeStaleLogs に任せる
+            }
+        });
 
         try {
             $collector = $this->collectorFor($account->platform);
@@ -93,7 +114,39 @@ class CollectionRunner
             report($e);
         }
 
+        Cache::forget(self::attemptKey($account, $job));
+
         return $log;
+    }
+
+    /** 「実行中」のまま残った古い記録を、打ち切られたものとして記録し直す */
+    public function closeStaleLogs(): int
+    {
+        $stale = SyncLog::query()
+            ->where('status', 'running')
+            ->where('started_at', '<', now()->subMinutes(self::STALE_MINUTES))
+            ->get();
+        $stale->each(fn (SyncLog $log) => $this->markInterrupted($log));
+
+        return $stale->count();
+    }
+
+    private function markInterrupted(SyncLog $log, ?string $reason = null): void
+    {
+        $log->refresh();
+        if ($log->status !== 'running') {
+            return;
+        }
+
+        $message = '処理が途中で打ち切られました(サーバーの実行時間やメモリの上限の可能性)。'
+            .self::RETRY_AFTER_MINUTES.'分後に自動で再試行します。'.($reason ? " 詳細: {$reason}" : '');
+        $log->update(['status' => 'failed', 'message' => $message, 'finished_at' => now()]);
+        $log->account?->forceFill(['last_error' => $message])->save();
+    }
+
+    private static function attemptKey(Account $account, string $job): string
+    {
+        return "sns:attempt:{$account->id}:{$job}";
     }
 
     public function collectorFor(Platform $platform): Collector

@@ -7,11 +7,13 @@ use App\Models\Account;
 use App\Models\DailyMetric;
 use App\Models\Post;
 use App\Models\PostSnapshot;
+use App\Models\SyncLog;
 use App\Services\CollectionRunner;
 use App\Services\Collectors\FacebookCollector;
 use App\Services\MetricsRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -294,6 +296,27 @@ class CollectionTest extends TestCase
         // 日次の収集開始時刻より前は日次を選ばない
         $this->travelTo(CarbonImmutable::parse('2026-10-05 02:00'));
         $this->assertSame(['stories'], array_column(app(CollectionRunner::class)->dueTasks(10), 1));
+    }
+
+    public function test_interrupted_task_is_skipped_and_stale_log_closed(): void
+    {
+        $runner = app(CollectionRunner::class);
+        $a = Account::factory()->platform(Platform::YouTube)->connected('1')->create(['daily_synced_at' => now()->subDays(3)]);
+        $b = Account::factory()->platform(Platform::YouTube)->connected('2')->create(['daily_synced_at' => now()->subDays(2)]);
+
+        // a の日次が強制終了された(目印と「実行中」の記録だけが残った)状態
+        Cache::put("sns:attempt:{$a->id}:daily", true, now()->addHour());
+        $log = SyncLog::create(['account_id' => $a->id, 'job' => 'daily', 'status' => 'running', 'started_at' => now()->subHour()]);
+
+        $this->assertSame([$b->id], array_map(fn ($t) => $t[0]->id, $runner->dueTasks(10)));
+
+        $this->assertSame(1, $runner->closeStaleLogs());
+        $this->assertSame('failed', $log->fresh()->status);
+        $this->assertStringContainsString('打ち切られました', $a->fresh()->last_error);
+
+        // 時間が経てば再び選ばれる
+        $this->travel(CollectionRunner::RETRY_AFTER_MINUTES + 1)->minutes();
+        $this->assertSame([$a->id, $b->id], array_map(fn ($t) => $t[0]->id, $runner->dueTasks(10)));
     }
 
     public function test_collect_command_runs_due_tasks(): void
