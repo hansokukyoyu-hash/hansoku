@@ -16,6 +16,9 @@ return [
     // 1回の日次収集で閲覧数を取り直す投稿の範囲(投稿日からの日数)
     'refresh_posts_days' => (int) env('SNS_REFRESH_POSTS_DAYS', 90),
 
+    // データベースのバックアップ先(公開フォルダの外。既定はプログラム本体と同じ階層の sns-report-backup)
+    'backup_dir' => env('SNS_BACKUP_DIR', dirname(base_path()).'/sns-report-backup'),
+
     // Facebookページ投稿の閲覧数に使う指標名(Meta側の指標名変更に備えて設定で差し替え可能)
     'facebook_post_views_metric' => env('SNS_FACEBOOK_POST_VIEWS_METRIC', 'post_media_view'),
 ];

@@ -122,9 +122,11 @@ htpasswd -c ~/sns-report-htpasswd/.htpasswd チームで使うID
 # 5分おきに収集(収集時期が来たアカウントを数件ずつ処理。前の回が動いていれば何もしない)
 */5 * * * * cd ~/sns-report && php artisan sns:collect >> storage/logs/cron.log 2>&1
 
-# 毎日4:30に MySQL をバックアップ(14日分を保持)
-30 4 * * * mysqldump -h DBホスト -u DBユーザー -p'DBパスワード' DB名 | gzip > ~/sns-report-backup/db_$(date +\%Y\%m\%d).sql.gz && find ~/sns-report-backup -name 'db_*.sql.gz' -mtime +14 -delete
+# 毎日4:30に MySQL をバックアップ(~/sns-report-backup に14日分を保持)
+30 4 * * * cd ~/sns-report && php artisan sns:backup >> storage/logs/backup.log 2>&1
 ```
+
+バックアップは `.env` の DB 設定を使うので、cron にパスワードを書く必要はありません。保存先は `SNS_BACKUP_DIR` で変更できます。戻すときは `gunzip -c ~/sns-report-backup/db_日時.sql.gz | mysql -h DBホスト -u DBユーザー -p DB名` を実行します(パスワードは聞かれたときに入力)。
 
 1回の実行で処理する件数は `SNS_ACCOUNTS_PER_RUN`(既定3件。ストーリーズと日次それぞれの件数)で調整できます。1回の実行が3分を超えたら残りは次の回に回します。サーバー側で処理が強制終了された場合は、収集ログに「打ち切られました」と記録し、そのアカウントは2時間後に再試行して、その間は他のアカウントを先に進めます。
 
