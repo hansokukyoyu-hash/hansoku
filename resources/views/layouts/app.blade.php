@@ -6,6 +6,10 @@
     <meta name="robots" content="noindex, nofollow, noarchive">
     <title>@yield('title', 'SNS閲覧数ダッシュボード')</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=2">
+    {{-- TikTok の審査で、アプリのアイコンとタブのアイコン(favicon)を同じにするよう求められるため --}}
+    @if (file_exists(public_path('legal/app-icon.png')))
+        <link rel="icon" type="image/png" href="{{ asset('legal/app-icon.png') }}">
+    @endif
 </head>
 <body>
 @auth
