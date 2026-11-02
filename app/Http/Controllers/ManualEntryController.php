@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/** Facebook個人・X など、APIで取らないアカウントの閲覧数を入力する */
+/** Facebook個人・X など、APIで取らないアカウントの閲覧数と投稿本数を入力する */
 class ManualEntryController extends Controller
 {
     public function index(Request $request): View
@@ -45,6 +45,7 @@ class ManualEntryController extends Controller
             'period_start' => ['required', 'date'],
             'period_end' => ['required', 'date', 'after_or_equal:period_start'],
             'views' => ['required', 'integer', 'min:0'],
+            'posts' => ['nullable', 'integer', 'min:0'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
 

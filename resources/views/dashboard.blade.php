@@ -54,13 +54,19 @@
 <p class="small muted">
     {{ $dashboard->start->isoFormat('YYYY/M/D(ddd)') }} 〜 {{ $dashboard->end->isoFormat('YYYY/M/D(ddd)') }}({{ $dashboard->days() }}日間)。
     前期間比は直前の同じ日数({{ $dashboard->previousStart()->isoFormat('M/D') }}〜{{ $dashboard->previousEnd()->isoFormat('M/D') }})と比べています。
-    投稿本数は、API連携のアカウントで投稿日が期間内のものを数えています(手入力のアカウントは含みません)。
+    投稿本数は、API連携のアカウントは投稿日が期間内のもの、手入力のアカウントは入力した期間が集計期間にすべて入るものを数えています(月次で入力した本数は、月単位で選ぶと正確に集計されます)。
     @if ($dashboard->mode === Dashboard::MODE_POSTED)
         モード「イ」は投稿日が期間内の投稿について、最新の累計閲覧数を合計します。手入力のアカウントは含みません。
     @else
         Instagram・Facebook はアカウント全体の閲覧数(広告を含む。Business Suite と同じ指標)、YouTube はショート・通常動画・ライブを含む全体の再生回数です。手入力分は、入力した期間と集計期間が重なる日数で按分しています。
     @endif
 </p>
+@if ($data['post_notes']['partial'] > 0 || $data['post_notes']['missing'] > 0)
+    <p class="small muted">
+        @if ($data['post_notes']['partial'] > 0)※ 集計期間と一部だけ重なる手入力が {{ $data['post_notes']['partial'] }} 件あり、その投稿本数は含めていません。@endif
+        @if ($data['post_notes']['missing'] > 0)※ 投稿本数が未入力の手入力が {{ $data['post_notes']['missing'] }} 件あります。@endif
+    </p>
+@endif
 
 <div class="kpis">
     <div class="kpi total">
@@ -82,7 +88,7 @@
             @endif
             <div class="posts">
                 @if ($p['posts'] === null)
-                    投稿 —<span class="muted">(手入力のみ)</span>
+                    投稿 —<span class="muted">(未入力)</span>
                 @else
                     投稿 {{ number_format($p['posts']) }} 本
                     @if (count($p['platform']->formats()) > 1 && $p['posts'] > 0)
@@ -108,6 +114,7 @@
             <th>SNS</th>
             <th class="num">閲覧数・再生回数</th>
             <th class="num">前期間比</th>
+            <th class="num">投稿本数</th>
             <th>最終更新</th>
         </tr>
     </thead>
@@ -118,6 +125,7 @@
             <td></td>
             <td class="num">{{ $num($brandRow['total']) }}</td>
             <td class="num">{!! $change($brandRow['total'], $brandRow['previous']) !!}</td>
+            <td class="num">{{ $num($brandRow['posts']) }}</td>
             <td></td>
         </tr>
         @forelse ($brandRow['accounts'] as $row)
@@ -137,6 +145,9 @@
                                         </tr>
                                     @endforeach
                                 </table>
+                                @if ($row['posts'] !== null && count($account->platform->formats()) > 1)
+                                    <div class="small muted" style="margin-top:8px">投稿本数の内訳: {{ collect($account->platform->formats())->map(fn ($label, $key) => $label.' '.($row['post_formats'][$key] ?? 0).'本')->implode('・') }}</div>
+                                @endif
                                 @if ($account->isApi())
                                     @php($posts = $dashboard->topPosts($account, 10))
                                     <div class="small muted" style="margin-top:8px">期間内に投稿されたもの(累計の多い順・上位10件)</div>
@@ -172,6 +183,7 @@
                 </td>
                 <td class="num">{{ $num($row['total']) }}</td>
                 <td class="num">{!! $change($row['total'], $row['previous']) !!}</td>
+                <td class="num">{!! $row['posts'] === null ? '<span class="muted" title="期間にすべて入る本数の入力がありません">未入力</span>' : number_format($row['posts']) !!}</td>
                 <td class="small">
                     @if ($account->isManual())
                         @php($lastEntry = $account->manualEntries()->max('period_end'))
@@ -186,7 +198,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td class="indent muted" colspan="5">アカウントが登録されていません。</td></tr>
+            <tr><td class="indent muted" colspan="6">アカウントが登録されていません。</td></tr>
         @endforelse
     @endforeach
     </tbody>

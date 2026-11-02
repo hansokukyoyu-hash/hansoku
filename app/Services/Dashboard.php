@@ -17,6 +17,9 @@ use Illuminate\Support\Collection;
  *
  * モード occurred(ア): 期間中に発生した閲覧数 = 日次値の合計 + 手入力分(期間の重なり日数で按分)
  * モード posted(イ):  期間中に投稿したものの閲覧数 = 投稿日が期間内の投稿の最新累計の合計(手入力分は含まない)
+ *
+ * 投稿本数(どちらのモードも同じ): API連携は投稿日が期間内の投稿の数。手入力は、入力した期間が
+ * 集計期間にすべて入るものだけを数える(本数は按分すると端数が出るため)。月次の入力を月単位で見れば正確になる。
  */
 class Dashboard
 {
@@ -50,6 +53,7 @@ class Dashboard
      *   brands: list<array{brand: Brand, total: int, previous: int, accounts: list<array>}>,
      *   platforms: array<string, array{platform: Platform, total: int, previous: int, posts: ?int, post_formats: array<string, int>, ads: int}>,
      *   posts: int,
+     *   post_notes: array{partial: int, missing: int},
      *   ads: int,
      *   total: int,
      *   previous: int,
@@ -66,17 +70,15 @@ class Dashboard
         $current = $this->viewsByAccountAndFormat($accounts, $this->start, $this->end);
         $previous = $this->viewsByAccountAndFormat($accounts, $this->previousStart(), $this->previousEnd());
 
-        $postCounts = $this->postCounts($accounts);
+        ['counts' => $postCounts, 'notes' => $postNotes] = $this->postCounts($accounts);
         $platforms = [];
         foreach (Platform::cases() as $platform) {
-            // API連携のアカウントが無いSNS(手入力のみ)は投稿本数が分からないので null
-            $hasApi = $accounts->contains(fn (Account $a) => $a->platform === $platform && $a->isApi());
             $platforms[$platform->value] = [
                 'platform' => $platform,
                 'total' => 0,
                 'previous' => 0,
-                'posts' => $hasApi ? array_sum($postCounts[$platform->value] ?? []) : null,
-                'post_formats' => $postCounts[$platform->value] ?? [],
+                'posts' => null, // 本数が分かるアカウントが1つも無ければ null(未入力)
+                'post_formats' => [],
                 'ads' => 0,
             ];
         }
@@ -89,12 +91,26 @@ class Dashboard
                 $total = $this->countable($account) ? array_sum($formats) : null;
                 $prev = $this->countable($account) ? array_sum($previous[$account->id] ?? []) : null;
 
+                $postFormats = $postCounts[$account->id] ?? null;
+                $posts = $postFormats === null ? null : array_sum($postFormats);
+
                 $rows[] = [
                     'account' => $account,
                     'total' => $total,
                     'previous' => $prev,
                     'formats' => $formats,
+                    'posts' => $posts,
+                    'post_formats' => $postFormats ?? [],
                 ];
+
+                $p = &$platforms[$account->platform->value];
+                if ($posts !== null) {
+                    $p['posts'] = ($p['posts'] ?? 0) + $posts;
+                    foreach ($postFormats as $format => $count) {
+                        $p['post_formats'][$format] = ($p['post_formats'][$format] ?? 0) + $count;
+                    }
+                }
+                unset($p);
 
                 $platforms[$account->platform->value]['total'] += $total ?? 0;
                 $platforms[$account->platform->value]['previous'] += $prev ?? 0;
@@ -106,6 +122,7 @@ class Dashboard
                 'accounts' => $rows,
                 'total' => array_sum(array_map(fn ($r) => $r['total'] ?? 0, $rows)),
                 'previous' => array_sum(array_map(fn ($r) => $r['previous'] ?? 0, $rows)),
+                'posts' => self::sumKnown(array_column($rows, 'posts')),
             ];
         }
 
@@ -115,33 +132,68 @@ class Dashboard
             'total' => array_sum(array_column($brandRows, 'total')),
             'previous' => array_sum(array_column($brandRows, 'previous')),
             'posts' => array_sum(array_map('array_sum', $postCounts)),
+            'post_notes' => $postNotes,
             'ads' => array_sum(array_column($platforms, 'ads')),
         ];
     }
 
     /**
-     * 期間内に投稿された本数(API連携のアカウントのみ。手入力分は投稿日が無いので数えない)
+     * 期間内の投稿本数(アカウントごと・フォーマットごと)。
+     * 本数が分からないアカウント(手入力で、期間にすべて入る本数の入力が無い)は含めない。
+     * notes.partial: 期間と一部だけ重なり本数に含めなかった手入力の件数
+     * notes.missing: 期間にすべて入るが本数が未入力の手入力の件数
      *
      * @param  Collection<int, Account>  $accounts
-     * @return array<string, array<string, int>> platform => [format => 本数]
+     * @return array{counts: array<int, array<string, int>>, notes: array{partial: int, missing: int}}
      */
     public function postCounts(Collection $accounts): array
     {
-        $platformOf = $accounts->mapWithKeys(fn (Account $a) => [$a->id => $a->platform->value]);
-        $result = [];
+        $counts = [];
+        $notes = ['partial' => 0, 'missing' => 0];
 
+        $apiIds = $accounts->filter(fn (Account $a) => $a->isApi())->pluck('id');
+        foreach ($apiIds as $id) {
+            $counts[$id] = [];
+        }
         Post::query()
             ->selectRaw('account_id, format, COUNT(*) as posts')
-            ->whereIn('account_id', $platformOf->keys())
+            ->whereIn('account_id', $apiIds)
             ->whereBetween('published_at', [$this->start->startOfDay(), $this->end->endOfDay()])
             ->groupBy('account_id', 'format')
             ->get()
-            ->each(function ($row) use (&$result, $platformOf) {
-                $platform = $platformOf[$row->account_id];
-                $result[$platform][$row->format] = ($result[$platform][$row->format] ?? 0) + (int) $row->posts;
+            ->each(function ($row) use (&$counts) {
+                $counts[$row->account_id][$row->format] = (int) $row->posts;
             });
 
-        return $result;
+        $start = $this->start->toDateString();
+        $end = $this->end->toDateString();
+        ManualEntry::query()
+            ->whereIn('account_id', $accounts->filter(fn (Account $a) => $a->isManual())->pluck('id'))
+            ->where('period_start', '<=', $end)
+            ->where('period_end', '>=', $start)
+            ->get()
+            ->each(function (ManualEntry $entry) use (&$counts, &$notes, $start, $end) {
+                $contained = CarbonImmutable::parse($entry->period_start)->toDateString() >= $start
+                    && CarbonImmutable::parse($entry->period_end)->toDateString() <= $end;
+
+                if (! $contained) {
+                    $notes['partial']++;
+                } elseif ($entry->posts === null) {
+                    $notes['missing']++;
+                } else {
+                    $counts[$entry->account_id][$entry->format] = ($counts[$entry->account_id][$entry->format] ?? 0) + $entry->posts;
+                }
+            });
+
+        return ['counts' => $counts, 'notes' => $notes];
+    }
+
+    /** null(未入力)を除いて合計する。すべて null なら null */
+    public static function sumKnown(array $values): ?int
+    {
+        $known = array_filter($values, fn ($v) => $v !== null);
+
+        return $known === [] ? null : array_sum($known);
     }
 
     /**

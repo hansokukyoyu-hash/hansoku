@@ -27,6 +27,27 @@ class ManualEntryTest extends TestCase
         $this->actingAs($operator)->get("/manual/{$account->id}")->assertOk()->assertSee('12,345');
     }
 
+    public function test_posts_are_optional_and_shown_in_history(): void
+    {
+        $account = Account::factory()->platform(Platform::TikTok)->manual()->create();
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->post("/manual/{$account->id}", [
+            'format' => 'video', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 500, 'posts' => 8,
+        ])->assertSessionHasNoErrors();
+        $this->actingAs($admin)->post("/manual/{$account->id}", [
+            'format' => 'video', 'period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'views' => 400, 'posts' => '',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('manual_entries', ['account_id' => $account->id, 'period_start' => '2026-10-01', 'posts' => 8]);
+        $this->assertDatabaseHas('manual_entries', ['account_id' => $account->id, 'period_start' => '2026-09-01', 'posts' => null]);
+        $this->actingAs($admin)->get("/manual/{$account->id}")->assertOk()->assertSee('投稿本数')->assertSee('未入力');
+
+        $this->actingAs($admin)->post("/manual/{$account->id}", [
+            'format' => 'video', 'period_start' => '2026-08-01', 'period_end' => '2026-08-31', 'views' => 1, 'posts' => -1,
+        ])->assertSessionHasErrors('posts');
+    }
+
     public function test_operator_cannot_enter_for_other_brand(): void
     {
         $account = Account::factory()->platform(Platform::X)->manual()->create();

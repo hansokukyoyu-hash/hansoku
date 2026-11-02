@@ -83,8 +83,49 @@ class DashboardTest extends TestCase
         $this->assertSame(2, $data['posts']);
         $this->assertSame(2, $data['platforms']['instagram']['posts']);
         $this->assertEquals(['reel' => 1, 'feed' => 1], $data['platforms']['instagram']['post_formats']);
-        // TikTok は手入力のみなので本数は不明
+        // TikTok の手入力(8/16〜9/14)は9月と一部だけ重なるので、本数は数えない(未入力扱い)
         $this->assertNull($data['platforms']['tiktok']['posts']);
+        $this->assertSame(['partial' => 1, 'missing' => 0], $data['post_notes']);
+        [$ig, $tt] = $data['brands'][0]['accounts'];
+        $this->assertSame(2, $ig['posts']);
+        $this->assertNull($tt['posts']);
+        $this->assertSame(2, $data['brands'][0]['posts']);
+    }
+
+    public function test_monthly_manual_posts_are_counted_when_inside_period(): void
+    {
+        ManualEntry::create(['account_id' => $this->tiktok->id, 'format' => 'video', 'period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'views' => 900, 'posts' => 7]);
+
+        $data = $this->september(Dashboard::MODE_OCCURRED);
+        [$ig, $tt] = $data['brands'][0]['accounts'];
+
+        $this->assertSame(7, $tt['posts']);
+        $this->assertSame(['video' => 7], $tt['post_formats']);
+        $this->assertSame(7, $data['platforms']['tiktok']['posts']);
+        $this->assertSame(9, $data['brands'][0]['posts']);
+        $this->assertSame(9, $data['posts']);
+        // モード「イ」でも本数は同じ
+        $this->assertSame(9, $this->september(Dashboard::MODE_POSTED)['posts']);
+
+        // 期間を9/2〜にすると9月分の入力は一部だけ重なるので数えない(按分しない)
+        $partial = (new Dashboard(CarbonImmutable::parse('2026-09-02'), CarbonImmutable::parse('2026-09-30'), Dashboard::MODE_OCCURRED))
+            ->build(User::factory()->admin()->create());
+        $this->assertNull($partial['brands'][0]['accounts'][1]['posts']);
+        $this->assertSame(2, $partial['post_notes']['partial']);
+    }
+
+    public function test_manual_entry_without_posts_is_reported_as_missing(): void
+    {
+        ManualEntry::create(['account_id' => $this->tiktok->id, 'format' => 'video', 'period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'views' => 900]);
+
+        $data = $this->september(Dashboard::MODE_OCCURRED);
+        $this->assertNull($data['brands'][0]['accounts'][1]['posts']);
+        $this->assertSame(['partial' => 1, 'missing' => 1], $data['post_notes']);
+
+        $this->actingAs(User::factory()->create())
+            ->get('/?start=2026-09-01&end=2026-09-30')
+            ->assertSee('投稿本数が未入力の手入力が 1 件あります')
+            ->assertSee('一部だけ重なる手入力が 1 件');
     }
 
     public function test_dashboard_shows_post_counts(): void
@@ -94,7 +135,8 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('期間内の投稿 2 本')
             ->assertSee('フィード1・リール1・ストーリーズ0')
-            ->assertSee('(手入力のみ)', false);
+            ->assertSee('(未入力)', false)
+            ->assertSee('投稿本数');
     }
 
     public function test_ad_views_are_shown_separately(): void
@@ -155,7 +197,10 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $csv = $response->streamedContent();
-        $this->assertStringContainsString('ブランドA,Instagram,IG公式,API,合計,640', $csv);
+        $this->assertStringContainsString('前期間,投稿本数', $csv);
+        $this->assertStringContainsString('ブランドA,Instagram,IG公式,API,合計,640,50,2', $csv);
+        $this->assertStringContainsString('ブランドA,Instagram,IG公式,API,リール,600,,1', $csv);
+        $this->assertStringContainsString('ブランドA,Instagram,IG公式,API,広告,0,,'."\n", $csv);
         $this->assertStringContainsString('ブランドA,TikTok,TT公式,手入力,動画,1400', $csv);
     }
 

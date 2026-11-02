@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ManualEntry extends Model
 {
-    protected $fillable = ['account_id', 'format', 'period_start', 'period_end', 'views', 'note', 'created_by'];
+    protected $fillable = ['account_id', 'format', 'period_start', 'period_end', 'views', 'posts', 'note', 'created_by'];
 
     protected function casts(): array
     {
         return [
             'views' => 'integer',
+            'posts' => 'integer',
         ];
     }
 

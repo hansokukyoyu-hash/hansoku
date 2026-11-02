@@ -34,15 +34,17 @@ class DashboardController extends Controller
         return response()->streamDownload(function () use ($data, $dashboard) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF"); // Excelで文字化けしないようBOMを付ける
-            fputcsv($out, ['ブランド', 'SNS', 'アカウント', '取得方法', 'フォーマット', '閲覧数・再生回数', '前期間']);
+            fputcsv($out, ['ブランド', 'SNS', 'アカウント', '取得方法', 'フォーマット', '閲覧数・再生回数', '前期間', '投稿本数']);
             foreach ($data['brands'] as $brandRow) {
                 foreach ($brandRow['accounts'] as $row) {
                     /** @var Account $account */
                     $account = $row['account'];
                     $method = $account->isApi() ? 'API' : '手入力';
-                    fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, '合計', $row['total'] ?? '', $row['previous'] ?? '']);
+                    fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, '合計', $row['total'] ?? '', $row['previous'] ?? '', $row['posts'] ?? '']);
                     foreach ($dashboard->breakdownFormats($account) as $key => $label) {
-                        fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, $label, $row['formats'][$key] ?? 0, '']);
+                        // 投稿本数は投稿の種類(formats)ごと。広告など投稿の種類でない行は空欄
+                        $posts = $row['posts'] !== null && array_key_exists($key, $account->platform->formats()) ? ($row['post_formats'][$key] ?? 0) : '';
+                        fputcsv($out, [$brandRow['brand']->name, $account->platform->label(), $account->name, $method, $label, $row['formats'][$key] ?? 0, '', $posts]);
                     }
                 }
             }
