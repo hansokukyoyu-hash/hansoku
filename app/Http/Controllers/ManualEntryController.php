@@ -40,18 +40,25 @@ class ManualEntryController extends Controller
     {
         abort_unless($request->user()->canManageAccount($account), 403);
 
-        $data = $request->validate([
-            'format' => ['required', Rule::in(array_keys($account->platform->formats()))],
-            'period_start' => ['required', 'date'],
-            'period_end' => ['required', 'date', 'after_or_equal:period_start'],
-            'views' => ['required', 'integer', 'min:0'],
-            'posts' => ['nullable', 'integer', 'min:0'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $account->manualEntries()->create($data + ['created_by' => $request->user()->id]);
+        $account->manualEntries()->create($this->validated($request, $account) + ['created_by' => $request->user()->id]);
 
         return back()->with('status', '入力しました。');
+    }
+
+    public function edit(Request $request, ManualEntry $entry): View
+    {
+        abort_unless($request->user()->canManageAccount($entry->account), 403);
+
+        return view('manual.edit', ['entry' => $entry, 'account' => $entry->account->load('brand')]);
+    }
+
+    public function update(Request $request, ManualEntry $entry): RedirectResponse
+    {
+        abort_unless($request->user()->canManageAccount($entry->account), 403);
+
+        $entry->update($this->validated($request, $entry->account));
+
+        return redirect()->route('manual.show', $entry->account)->with('status', '更新しました。');
     }
 
     public function destroy(Request $request, ManualEntry $entry): RedirectResponse
@@ -61,5 +68,17 @@ class ManualEntryController extends Controller
         $entry->delete();
 
         return back()->with('status', '削除しました。');
+    }
+
+    private function validated(Request $request, Account $account): array
+    {
+        return $request->validate([
+            'format' => ['required', Rule::in(array_keys($account->platform->formats()))],
+            'period_start' => ['required', 'date'],
+            'period_end' => ['required', 'date', 'after_or_equal:period_start'],
+            'views' => ['required', 'integer', 'min:0'],
+            'posts' => ['nullable', 'integer', 'min:0'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
     }
 }

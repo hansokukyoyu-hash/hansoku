@@ -18,6 +18,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/manual', [ManualEntryController::class, 'index'])->name('manual.index');
     Route::get('/manual/{account}', [ManualEntryController::class, 'show'])->name('manual.show');
     Route::post('/manual/{account}', [ManualEntryController::class, 'store'])->name('manual.store');
+    Route::get('/manual/entries/{entry}/edit', [ManualEntryController::class, 'edit'])->name('manual.edit');
+    Route::put('/manual/entries/{entry}', [ManualEntryController::class, 'update'])->name('manual.update');
     Route::delete('/manual/entries/{entry}', [ManualEntryController::class, 'destroy'])->name('manual.destroy');
 
     Route::middleware('admin')->group(function () {

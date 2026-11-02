@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Platform;
 use App\Models\Account;
 use App\Models\Brand;
+use App\Models\ManualEntry;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -46,6 +47,45 @@ class ManualEntryTest extends TestCase
         $this->actingAs($admin)->post("/manual/{$account->id}", [
             'format' => 'video', 'period_start' => '2026-08-01', 'period_end' => '2026-08-31', 'views' => 1, 'posts' => -1,
         ])->assertSessionHasErrors('posts');
+    }
+
+    public function test_entry_can_be_edited_to_add_posts(): void
+    {
+        $account = Account::factory()->platform(Platform::X)->manual()->create();
+        $operator = User::factory()->operator()->create();
+        $operator->brands()->attach($account->brand);
+        $entry = ManualEntry::create(['account_id' => $account->id, 'format' => 'post', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 700, 'created_by' => $operator->id]);
+
+        $this->actingAs($operator)->get("/manual/entries/{$entry->id}/edit")
+            ->assertOk()->assertSee('value="700"', false)->assertSee('value="2026-10"', false);
+
+        $this->actingAs($operator)->put("/manual/entries/{$entry->id}", [
+            'format' => 'post', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 750, 'posts' => 12,
+        ])->assertRedirect("/manual/{$account->id}")->assertSessionHas('status');
+
+        $entry->refresh();
+        $this->assertSame(750, $entry->views);
+        $this->assertSame(12, $entry->posts);
+        $this->assertSame($operator->id, (int) $entry->created_by);
+        $this->assertSame(1, ManualEntry::count());
+
+        $this->actingAs($operator)->put("/manual/entries/{$entry->id}", [
+            'format' => 'post', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 750, 'posts' => -3,
+        ])->assertSessionHasErrors('posts');
+    }
+
+    public function test_others_cannot_edit_entry(): void
+    {
+        $account = Account::factory()->platform(Platform::X)->manual()->create();
+        $entry = ManualEntry::create(['account_id' => $account->id, 'format' => 'post', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 700]);
+        $operator = User::factory()->operator()->create();
+        $operator->brands()->attach(Brand::factory()->create());
+        $payload = ['format' => 'post', 'period_start' => '2026-10-01', 'period_end' => '2026-10-31', 'views' => 1, 'posts' => 1];
+
+        $this->actingAs($operator)->get("/manual/entries/{$entry->id}/edit")->assertForbidden();
+        $this->actingAs($operator)->put("/manual/entries/{$entry->id}", $payload)->assertForbidden();
+        $this->actingAs(User::factory()->create())->put("/manual/entries/{$entry->id}", $payload)->assertForbidden();
+        $this->assertSame(700, $entry->fresh()->views);
     }
 
     public function test_operator_cannot_enter_for_other_brand(): void
