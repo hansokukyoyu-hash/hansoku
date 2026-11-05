@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AccountController extends Controller
 {
@@ -71,6 +72,25 @@ class AccountController extends Controller
         return redirect()->route('admin.accounts.index')->with('status', "「{$account->name}」".implode(' / ', $messages));
     }
 
+    /** 管理しているアカウントの一覧(Excel で開ける CSV) */
+    public function export(): StreamedResponse
+    {
+        $order = array_flip(array_map(fn (Platform $p) => $p->value, Platform::cases()));
+        $brands = Brand::with('accounts')->orderBy('sort_order')->orderBy('id')->get();
+
+        return response()->streamDownload(function () use ($brands, $order) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF"); // Excelで文字化けしないようBOMを付ける
+            fputcsv($out, ['ブランド', 'アカウント名', 'SNS媒体名', 'プロフィールURL']);
+            foreach ($brands as $brand) {
+                foreach ($brand->accounts->sortBy(fn (Account $a) => [$order[$a->platform->value], $a->id]) as $account) {
+                    fputcsv($out, [$brand->name, $account->name, $account->platform->label(), $account->profile_url ?? '']);
+                }
+            }
+            fclose($out);
+        }, 'sns-accounts_'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([
@@ -78,6 +98,7 @@ class AccountController extends Controller
             'platform' => ['required', Rule::enum(Platform::class)],
             'name' => ['required', 'string', 'max:100'],
             'input_method' => ['required', Rule::in([Account::METHOD_API, Account::METHOD_MANUAL])],
+            'profile_url' => ['nullable', 'url:http,https', 'max:1024'],
         ]);
 
         if ($data['input_method'] === Account::METHOD_API && ! Platform::from($data['platform'])->supportsApi()) {

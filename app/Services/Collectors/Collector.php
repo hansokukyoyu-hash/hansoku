@@ -5,6 +5,7 @@ namespace App\Services\Collectors;
 use App\Models\Account;
 use App\Services\MetricsRecorder;
 use Carbon\CarbonImmutable;
+use Throwable;
 
 abstract class Collector
 {
@@ -17,6 +18,29 @@ abstract class Collector
     public function collectStories(Account $account): string
     {
         return 'ストーリーズ非対応';
+    }
+
+    /**
+     * プロフィールURLが空のときだけ入れる(管理者が編集画面で入れた値は上書きしない)。
+     * 取れなくても収集そのものは失敗にしない。
+     *
+     * @param  callable(): ?string  $resolve
+     */
+    protected function fillProfileUrl(Account $account, callable $resolve): void
+    {
+        if ($account->profile_url) {
+            return;
+        }
+
+        try {
+            $url = $resolve();
+        } catch (Throwable) {
+            return;
+        }
+
+        if ($url) {
+            $account->forceFill(['profile_url' => $url])->save();
+        }
     }
 
     protected function token(Account $account): string

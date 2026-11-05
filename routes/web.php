@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('brands', Admin\BrandController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('accounts/export.csv', [Admin\AccountController::class, 'export'])->name('accounts.export');
             Route::resource('accounts', Admin\AccountController::class)->except(['show']);
             Route::post('accounts/{account}/collect', [Admin\AccountController::class, 'collect'])->name('accounts.collect');
             Route::get('accounts/{account}/connect', [Admin\ConnectController::class, 'redirect'])->name('accounts.connect');

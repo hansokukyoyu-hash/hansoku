@@ -30,11 +30,13 @@
                 <option value="{{ Account::METHOD_MANUAL }}" @selected(old('input_method', $account->input_method) === Account::METHOD_MANUAL)>手入力</option>
             </select>
         </label>
+        <label style="flex:1 1 100%">プロフィールURL<input type="url" name="profile_url" value="{{ old('profile_url', $account->profile_url) }}" maxlength="1024" placeholder="https://www.tiktok.com/@アカウント名" style="width:100%"></label>
         <button class="btn primary">保存</button>
     </form>
     <ul class="small muted">
         <li>API(自動取得)が使えるのは、Instagramプロアカウント・Facebookページ・YouTube・Threads・TikTok です。</li>
         <li>手入力からAPIに切り替えた場合、連携した日以降の期間は手入力しないでください(手入力分も合計に含まれるため二重に数えられます)。</li>
+        <li>プロフィールURLは、Instagram・Facebook・YouTube・Threads のAPI連携アカウントなら収集時に自動で入ります(空欄のときだけ)。TikTok と手入力のアカウントは、ここに入れてください。</li>
         <li>Facebook個人プロフィール、Instagram個人アカウント、X は「手入力」を選んでください(APIを選んでも手入力として保存されます)。</li>
     </ul>
 </div>

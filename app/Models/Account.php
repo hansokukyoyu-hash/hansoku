@@ -18,7 +18,7 @@ class Account extends Model
     public const METHOD_MANUAL = 'manual';
 
     protected $fillable = [
-        'brand_id', 'platform', 'name', 'input_method', 'external_id', 'credentials',
+        'brand_id', 'platform', 'name', 'input_method', 'external_id', 'profile_url', 'credentials',
         'status', 'last_error', 'daily_synced_at', 'stories_synced_at',
     ];
 

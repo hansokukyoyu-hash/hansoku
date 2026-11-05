@@ -317,6 +317,39 @@ class CollectionTest extends TestCase
         $this->assertStringStartsWith('【再連携が必要】', $account->fresh()->last_error);
     }
 
+    public function test_threads_fills_profile_url_only_when_empty(): void
+    {
+        $account = Account::factory()->platform(Platform::Threads)->connected('th7')->create([
+            'credentials' => ['access_token' => 'tok', 'expires_at' => now()->addDays(30)->toIso8601String()],
+        ]);
+        Http::fake([
+            'graph.threads.net/v1.0/th7/threads*' => Http::response(['data' => []]),
+            'graph.threads.net/v1.0/th7?*' => Http::response(['id' => 'th7', 'username' => 'brand_official']),
+        ]);
+
+        app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY);
+        $this->assertSame('https://www.threads.net/@brand_official', $account->fresh()->profile_url);
+
+        // 管理者が入れた URL は上書きしない
+        $account->forceFill(['profile_url' => 'https://www.threads.net/@manual'])->save();
+        app(CollectionRunner::class)->run($account->fresh(), CollectionRunner::JOB_DAILY);
+        $this->assertSame('https://www.threads.net/@manual', $account->fresh()->profile_url);
+    }
+
+    public function test_profile_url_failure_does_not_fail_collection(): void
+    {
+        $account = Account::factory()->platform(Platform::Threads)->connected('th8')->create([
+            'credentials' => ['access_token' => 'tok', 'expires_at' => now()->addDays(30)->toIso8601String()],
+        ]);
+        Http::fake([
+            'graph.threads.net/v1.0/th8/threads*' => Http::response(['data' => []]),
+            'graph.threads.net/v1.0/th8?*' => Http::response(['error' => ['message' => 'oops', 'code' => 100]], 400),
+        ]);
+
+        $this->assertSame('success', app(CollectionRunner::class)->run($account, CollectionRunner::JOB_DAILY)->status);
+        $this->assertNull($account->fresh()->profile_url);
+    }
+
     public function test_due_tasks_prioritise_stories_and_respect_limit(): void
     {
         $ig = Account::factory()->platform(Platform::Instagram)->connected('1')->create(['daily_synced_at' => now()->subDay()]);

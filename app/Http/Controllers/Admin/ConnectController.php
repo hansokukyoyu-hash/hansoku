@@ -162,6 +162,10 @@ class ConnectController extends Controller
     private function connected(Request $request, Account $account, string $label): RedirectResponse
     {
         $request->session()->forget('connect');
+        if ($account->isDirty('external_id')) {
+            // 別のアカウントにつなぎ直したら、次の収集でプロフィールURLを取り直す
+            $account->profile_url = null;
+        }
         $account->forceFill(['status' => 'active', 'last_error' => null])->save();
 
         return redirect()->route('admin.accounts.index')

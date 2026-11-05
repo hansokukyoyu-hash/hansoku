@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\Platform;
 use App\Models\Account;
+use App\Models\Brand;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -99,6 +100,30 @@ class ConnectTest extends TestCase
     public function test_wrong_method_shows_friendly_page(): void
     {
         $this->actingAs(User::factory()->admin()->create())->post('/')->assertStatus(405)->assertSee('ページを表示できませんでした');
+    }
+
+    public function test_account_list_export_and_profile_url_edit(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $brand = Brand::factory()->create(['name' => '焼そば']);
+        $ig = Account::factory()->for($brand)->platform(Platform::Instagram)->create(['name' => '焼そばセンター', 'profile_url' => 'https://www.instagram.com/yakisoba/']);
+        $tt = Account::factory()->for($ig->brand)->platform(Platform::TikTok)->manual()->create(['name' => '焼そばTT']);
+
+        $this->actingAs($admin)->get('/admin/accounts')->assertOk()->assertSee('Excel出力')->assertSee('未入力のアカウントが 1 件');
+
+        $this->actingAs($admin)->put("/admin/accounts/{$tt->id}", [
+            'brand_id' => $tt->brand_id, 'platform' => 'tiktok', 'name' => '焼そばTT', 'input_method' => 'manual', 'profile_url' => 'not a url',
+        ])->assertSessionHasErrors('profile_url');
+        $this->actingAs($admin)->put("/admin/accounts/{$tt->id}", [
+            'brand_id' => $tt->brand_id, 'platform' => 'tiktok', 'name' => '焼そばTT', 'input_method' => 'manual', 'profile_url' => 'https://www.tiktok.com/@yakisoba',
+        ])->assertRedirect();
+
+        $csv = $this->actingAs($admin)->get('/admin/accounts/export.csv')->assertOk()->streamedContent();
+        $this->assertStringStartsWith("\xEF\xBB\xBFブランド,アカウント名,SNS媒体名,プロフィールURL", $csv);
+        $this->assertStringContainsString('焼そば,焼そばセンター,Instagram,https://www.instagram.com/yakisoba/', $csv);
+        $this->assertStringContainsString('焼そば,焼そばTT,TikTok,https://www.tiktok.com/@yakisoba', $csv);
+
+        $this->actingAs(User::factory()->operator()->create())->get('/admin/accounts/export.csv')->assertForbidden();
     }
 
     public function test_manual_platform_cannot_connect(): void

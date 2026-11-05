@@ -3,22 +3,30 @@
 @section('content')
 <div class="row" style="justify-content:space-between;align-items:center">
     <h1>アカウント連携</h1>
-    <a class="btn primary" href="{{ route('admin.accounts.create') }}">アカウントを追加</a>
+    <div class="row" style="gap:6px">
+        <a class="btn" href="{{ route('admin.accounts.export') }}">Excel出力(アカウント一覧)</a>
+        <a class="btn primary" href="{{ route('admin.accounts.create') }}">アカウントを追加</a>
+    </div>
 </div>
 <p class="muted small">
     API連携のアカウントは「連携」を押し、そのアカウントを管理している人のSNSログインで許可します。
     連携後は自動で収集されます(ストーリーズは数時間おき、その他は1日1回)。
 </p>
+@php($missingUrl = $brands->flatMap->accounts->whereNull('profile_url')->count())
+@if ($missingUrl > 0)
+    <p class="small muted">※ プロフィールURLが未入力のアカウントが {{ $missingUrl }} 件あります(API連携は次の収集で自動で入ります。TikTok・手入力は「編集」から入れてください)。</p>
+@endif
 @forelse ($brands as $brand)
     <h2>{{ $brand->name }}</h2>
     <div class="table-wrap">
     <table>
-        <thead><tr><th>SNS</th><th>アカウント</th><th>取得方法</th><th>状態</th><th>最終取得</th><th></th></tr></thead>
+        <thead><tr><th>SNS</th><th>アカウント</th><th>プロフィールURL</th><th>取得方法</th><th>状態</th><th>最終取得</th><th></th></tr></thead>
         <tbody>
         @forelse ($brand->accounts as $account)
             <tr>
                 <td>{{ $account->platform->label() }}</td>
                 <td>{{ $account->name }}</td>
+                <td class="small">@if ($account->profile_url)<a href="{{ $account->profile_url }}" target="_blank" rel="noopener noreferrer">{{ \Illuminate\Support\Str::limit(preg_replace('#^https?://(www\.)?#', '', $account->profile_url), 40) }}</a>@else<span class="badge error">未入力</span>@endif</td>
                 <td>@if ($account->isManual())<span class="badge manual">手入力</span>@else<span class="badge">API</span>@endif</td>
                 <td class="small">
                     @if ($account->isManual())
@@ -51,7 +59,7 @@
                 </div></td>
             </tr>
         @empty
-            <tr><td colspan="6" class="muted">アカウントがありません。</td></tr>
+            <tr><td colspan="7" class="muted">アカウントがありません。</td></tr>
         @endforelse
         </tbody>
     </table>

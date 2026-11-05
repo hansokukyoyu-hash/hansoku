@@ -33,7 +33,14 @@ class InstagramCollector extends Collector
             $count += $this->record($graph, $account, $item, $format) ? 1 : 0;
         }
 
-        return "投稿 {$count} 件を更新、".$this->collectAccountViews($graph, $account);
+        $message = "投稿 {$count} 件を更新、".$this->collectAccountViews($graph, $account);
+        $this->fillProfileUrl($account, function () use ($graph, $account) {
+            $username = $graph->get($account->external_id, ['fields' => 'username'], $this->token($account))['username'] ?? null;
+
+            return $username ? "https://www.instagram.com/{$username}/" : null;
+        });
+
+        return $message;
     }
 
     /**

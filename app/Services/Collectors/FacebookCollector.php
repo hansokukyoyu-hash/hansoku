@@ -29,7 +29,19 @@ class FacebookCollector extends Collector
             ]) ? 1 : 0;
         }
 
-        return "投稿 {$count} 件を更新、".$this->collectPageViews($graph, $account);
+        $message = "投稿 {$count} 件を更新、".$this->collectPageViews($graph, $account);
+        $this->fillProfileUrl($account, function () use ($graph, $account) {
+            try {
+                $link = $graph->get($account->external_id, ['fields' => 'link'], $this->token($account))['link'] ?? null;
+            } catch (SnsApiException) {
+                $link = null;
+            }
+
+            // ページIDの URL でもページが開く
+            return $link ?: "https://www.facebook.com/{$account->external_id}";
+        });
+
+        return $message;
     }
 
     /**
