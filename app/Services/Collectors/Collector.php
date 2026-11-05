@@ -22,25 +22,31 @@ abstract class Collector
 
     /**
      * プロフィールURLが空のときだけ入れる(管理者が編集画面で入れた値は上書きしない)。
-     * 取れなくても収集そのものは失敗にしない。
-     *
-     * @param  callable(): ?string  $resolve
+     * 取れなくても収集そのものは失敗にしない。入れた(または入っている)URLを返す。
      */
-    protected function fillProfileUrl(Account $account, callable $resolve): void
+    public function fillProfileUrl(Account $account): ?string
     {
         if ($account->profile_url) {
-            return;
+            return $account->profile_url;
         }
 
         try {
-            $url = $resolve();
+            $url = $this->resolveProfileUrl($account);
         } catch (Throwable) {
-            return;
+            return null;
         }
 
         if ($url) {
             $account->forceFill(['profile_url' => $url])->save();
         }
+
+        return $url;
+    }
+
+    /** API からプロフィールURLを組み立てる(取れない SNS は null) */
+    protected function resolveProfileUrl(Account $account): ?string
+    {
+        return null;
     }
 
     protected function token(Account $account): string

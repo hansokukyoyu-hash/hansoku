@@ -57,12 +57,15 @@ class ThreadsCollector extends Collector
         $this->recorder->rebuildDaily($account, now()->subDay());
         $this->recorder->rebuildDaily($account, now());
 
-        $this->fillProfileUrl($account, function () use ($graph, $account) {
-            $username = $graph->get($account->external_id, ['fields' => 'username'], $this->token($account))['username'] ?? null;
-
-            return $username ? "https://www.threads.net/@{$username}" : null;
-        });
+        $this->fillProfileUrl($account);
 
         return "投稿 {$count} 件を更新";
+    }
+
+    protected function resolveProfileUrl(Account $account): ?string
+    {
+        $username = GraphClient::threads()->get($account->external_id, ['fields' => 'username'], $this->token($account))['username'] ?? null;
+
+        return $username ? "https://www.threads.net/@{$username}" : null;
     }
 }

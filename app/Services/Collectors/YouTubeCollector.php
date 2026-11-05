@@ -80,14 +80,7 @@ class YouTubeCollector extends Collector
             return sprintf('日次 %d 日分を更新(ショート別の取得に失敗: %s)', count($byDay), $e->getMessage());
         }
 
-        $this->fillProfileUrl($account, function () use ($account, $token) {
-            $handle = Http::withToken($token)->timeout(30)
-                ->get('https://www.googleapis.com/youtube/v3/channels', ['part' => 'snippet', 'id' => $account->external_id])
-                ->json('items.0.snippet.customUrl');
-
-            // ハンドル(@〜)が無いチャンネルはチャンネルIDの URL
-            return $handle ? 'https://www.youtube.com/'.$handle : "https://www.youtube.com/channel/{$account->external_id}";
-        });
+        $this->fillProfileUrl($account);
 
         return sprintf('日次 %d 日分、ショート %d 本を更新', count($byDay), $count);
     }
@@ -200,5 +193,15 @@ class YouTubeCollector extends Collector
         }
 
         return $response->json() ?? [];
+    }
+
+    protected function resolveProfileUrl(Account $account): ?string
+    {
+        $handle = Http::withToken($this->oauth->freshAccessToken($account))->timeout(30)
+            ->get('https://www.googleapis.com/youtube/v3/channels', ['part' => 'snippet', 'id' => $account->external_id])
+            ->json('items.0.snippet.customUrl');
+
+        // ハンドル(@〜)が無いチャンネルはチャンネルIDの URL
+        return $handle ? 'https://www.youtube.com/'.$handle : "https://www.youtube.com/channel/{$account->external_id}";
     }
 }

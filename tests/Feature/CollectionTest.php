@@ -336,6 +336,22 @@ class CollectionTest extends TestCase
         $this->assertSame('https://www.threads.net/@manual', $account->fresh()->profile_url);
     }
 
+    public function test_fill_profile_urls_command_only_targets_empty_api_accounts(): void
+    {
+        config(['services.meta.graph_version' => 'v23.0']);
+        $ig = Account::factory()->platform(Platform::Instagram)->connected('17999')->create();
+        $filled = Account::factory()->platform(Platform::Threads)->connected('th9')->create(['profile_url' => 'https://www.threads.net/@keep']);
+        $tiktok = Account::factory()->platform(Platform::TikTok)->connected('open9')->create();
+        Http::fake(['graph.facebook.com/v23.0/17999?*' => Http::response(['id' => '17999', 'username' => 'yakisoba_center'])]);
+
+        $this->artisan('sns:fill-profile-urls')->expectsOutputToContain('1 件中 1 件')->assertSuccessful();
+
+        $this->assertSame('https://www.instagram.com/yakisoba_center/', $ig->fresh()->profile_url);
+        $this->assertSame('https://www.threads.net/@keep', $filled->fresh()->profile_url);
+        $this->assertNull($tiktok->fresh()->profile_url);
+        Http::assertSentCount(1);
+    }
+
     public function test_profile_url_failure_does_not_fail_collection(): void
     {
         $account = Account::factory()->platform(Platform::Threads)->connected('th8')->create([

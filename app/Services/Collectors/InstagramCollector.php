@@ -34,11 +34,7 @@ class InstagramCollector extends Collector
         }
 
         $message = "投稿 {$count} 件を更新、".$this->collectAccountViews($graph, $account);
-        $this->fillProfileUrl($account, function () use ($graph, $account) {
-            $username = $graph->get($account->external_id, ['fields' => 'username'], $this->token($account))['username'] ?? null;
-
-            return $username ? "https://www.instagram.com/{$username}/" : null;
-        });
+        $this->fillProfileUrl($account);
 
         return $message;
     }
@@ -151,5 +147,12 @@ class InstagramCollector extends Collector
         ], GraphClient::insightValue($insights, 'views') ?? 0);
 
         return true;
+    }
+
+    protected function resolveProfileUrl(Account $account): ?string
+    {
+        $username = GraphClient::meta()->get($account->external_id, ['fields' => 'username'], $this->token($account))['username'] ?? null;
+
+        return $username ? "https://www.instagram.com/{$username}/" : null;
     }
 }

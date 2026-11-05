@@ -30,16 +30,7 @@ class FacebookCollector extends Collector
         }
 
         $message = "投稿 {$count} 件を更新、".$this->collectPageViews($graph, $account);
-        $this->fillProfileUrl($account, function () use ($graph, $account) {
-            try {
-                $link = $graph->get($account->external_id, ['fields' => 'link'], $this->token($account))['link'] ?? null;
-            } catch (SnsApiException) {
-                $link = null;
-            }
-
-            // ページIDの URL でもページが開く
-            return $link ?: "https://www.facebook.com/{$account->external_id}";
-        });
+        $this->fillProfileUrl($account);
 
         return $message;
     }
@@ -206,5 +197,17 @@ class FacebookCollector extends Collector
         $this->recorder->recordPost($account, ['external_id' => $id, 'format' => $format] + $data, GraphClient::insightValue($insights, $metric) ?? 0);
 
         return true;
+    }
+
+    protected function resolveProfileUrl(Account $account): ?string
+    {
+        try {
+            $link = GraphClient::meta()->get($account->external_id, ['fields' => 'link'], $this->token($account))['link'] ?? null;
+        } catch (SnsApiException) {
+            $link = null;
+        }
+
+        // ページIDの URL でもページが開く
+        return $link ?: "https://www.facebook.com/{$account->external_id}";
     }
 }
